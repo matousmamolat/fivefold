@@ -3259,9 +3259,6 @@ try {
 } catch (e) {
   window.__bootErr(e && e.stack || e);
 }
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(function () {}));
-}
 </script>
 </body>
 </html>

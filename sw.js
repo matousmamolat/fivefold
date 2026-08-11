@@ -1,20 +1,11 @@
-const CACHE = "fivefold-v1";
-self.addEventListener("install", (e) => { self.skipWaiting(); });
-self.addEventListener("activate", (e) => { e.waitUntil(self.clients.claim()); });
-self.addEventListener("fetch", (e) => {
-  const req = e.request;
-  if (req.method !== "GET") return; // AI POST calls always go to network
-  e.respondWith(
-    caches.open(CACHE).then(async (cache) => {
-      const hit = await cache.match(req);
-      if (hit) return hit;
-      try {
-        const res = await fetch(req);
-        if (res && (res.ok || res.type === "opaque")) cache.put(req, res.clone());
-        return res;
-      } catch (err) {
-        return hit || Response.error();
-      }
-    })
-  );
+// Self-destruct: undo the old aggressive cache so pages always load fresh.
+self.addEventListener("install", () => self.skipWaiting());
+self.addEventListener("activate", (e) => {
+  e.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(keys.map((k) => caches.delete(k)));
+    await self.registration.unregister();
+    const clients = await self.clients.matchAll({ type: "window" });
+    clients.forEach((c) => c.navigate(c.url));
+  })());
 });
