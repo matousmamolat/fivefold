@@ -18,76 +18,224 @@
 <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
 <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.js"></script>
-<script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
-<script type="text/babel" data-presets="react">
-const { useState, useEffect, useCallback } = React;
-
-if (!window.storage) window.storage = {
-  async get(k) { const v = localStorage.getItem(k); return v == null ? null : { value: v }; },
-  async set(k, val) { localStorage.setItem(k, val); return { ok: true }; },
+<script>
+window.__bootErr = function (msg) {
+  var r = document.getElementById("root");
+  if (r) r.innerHTML = '<div style="padding:24px;color:#EC7A93;font-family:system-ui;font-size:13px;white-space:pre-wrap;line-height:1.5">Fivefold hit an error:\n\n' + String(msg).replace(/</g, "&lt;") + '</div>';
 };
-
-function Icon({ name, size = 24, color = "currentColor", strokeWidth = 2, style, className }) {
+window.addEventListener("error", function (e) {
+  window.__bootErr(e.error && e.error.stack || e.message);
+});
+window.addEventListener("unhandledrejection", function (e) {
+  window.__bootErr("Promise: " + (e.reason && e.reason.stack || e.reason));
+});
+const {
+  useState,
+  useEffect,
+  useCallback
+} = React;
+if (!window.storage) window.storage = {
+  async get(k) {
+    const v = localStorage.getItem(k);
+    return v == null ? null : {
+      value: v
+    };
+  },
+  async set(k, val) {
+    localStorage.setItem(k, val);
+    return {
+      ok: true
+    };
+  }
+};
+function Icon({
+  name,
+  size = 24,
+  color = "currentColor",
+  strokeWidth = 2,
+  style,
+  className
+}) {
   const lib = window.lucide || {};
   const store = lib.icons || lib;
   const names = Array.isArray(name) ? name : [name];
   let node = null;
-  for (const n of names) { if (store[n]) { node = store[n]; break; } }
-  if (!node) return React.createElement("svg", { width: size, height: size, viewBox: "0 0 24 24" });
-  const kids = Array.isArray(node) ? node : (node.iconNode || []);
-  return React.createElement("svg", { width: size, height: size, viewBox: "0 0 24 24", fill: "none", stroke: color, strokeWidth: strokeWidth, strokeLinecap: "round", strokeLinejoin: "round", style: style, className: className },
-    (kids || []).map((c, i) => React.createElement(c[0], Object.assign({ key: i }, c[1]))));
+  for (const n of names) {
+    if (store[n]) {
+      node = store[n];
+      break;
+    }
+  }
+  if (!node) return React.createElement("svg", {
+    width: size,
+    height: size,
+    viewBox: "0 0 24 24"
+  });
+  const kids = Array.isArray(node) ? node : node.iconNode || [];
+  return React.createElement("svg", {
+    width: size,
+    height: size,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: color,
+    strokeWidth: strokeWidth,
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
+    style: style,
+    className: className
+  }, (kids || []).map((c, i) => React.createElement(c[0], Object.assign({
+    key: i
+  }, c[1]))));
 }
-const Loader2 = (p) => React.createElement(Icon, Object.assign({ name: ["Loader2", "LoaderCircle"] }, p));
-const Heart = (p) => React.createElement(Icon, Object.assign({ name: "Heart" }, p));
-const Palette = (p) => React.createElement(Icon, Object.assign({ name: "Palette" }, p));
-const Wind = (p) => React.createElement(Icon, Object.assign({ name: "Wind" }, p));
-const Users = (p) => React.createElement(Icon, Object.assign({ name: "Users" }, p));
-const Sprout = (p) => React.createElement(Icon, Object.assign({ name: "Sprout" }, p));
-const Flame = (p) => React.createElement(Icon, Object.assign({ name: "Flame" }, p));
-const Gamepad2 = (p) => React.createElement(Icon, Object.assign({ name: "Gamepad2" }, p));
-const Plus = (p) => React.createElement(Icon, Object.assign({ name: "Plus" }, p));
-const Check = (p) => React.createElement(Icon, Object.assign({ name: "Check" }, p));
-const Calendar = (p) => React.createElement(Icon, Object.assign({ name: "Calendar" }, p));
-const Sparkles = (p) => React.createElement(Icon, Object.assign({ name: "Sparkles" }, p));
-const X = (p) => React.createElement(Icon, Object.assign({ name: "X" }, p));
-const ChevronLeft = (p) => React.createElement(Icon, Object.assign({ name: "ChevronLeft" }, p));
-const ChevronRight = (p) => React.createElement(Icon, Object.assign({ name: "ChevronRight" }, p));
-const Moon = (p) => React.createElement(Icon, Object.assign({ name: "Moon" }, p));
-const User = (p) => React.createElement(Icon, Object.assign({ name: "User" }, p));
-const BookOpen = (p) => React.createElement(Icon, Object.assign({ name: "BookOpen" }, p));
-const Trash2 = (p) => React.createElement(Icon, Object.assign({ name: "Trash2" }, p));
-const Lock = (p) => React.createElement(Icon, Object.assign({ name: "Lock" }, p));
-const Unlock = (p) => React.createElement(Icon, Object.assign({ name: "Unlock" }, p));
-const Dumbbell = (p) => React.createElement(Icon, Object.assign({ name: "Dumbbell" }, p));
-const Clock = (p) => React.createElement(Icon, Object.assign({ name: "Clock" }, p));
-const RefreshCw = (p) => React.createElement(Icon, Object.assign({ name: "RefreshCw" }, p));
-const Pencil = (p) => React.createElement(Icon, Object.assign({ name: "Pencil" }, p));
-const Utensils = (p) => React.createElement(Icon, Object.assign({ name: "Utensils" }, p));
-const Droplet = (p) => React.createElement(Icon, Object.assign({ name: "Droplet" }, p));
-const Settings = (p) => React.createElement(Icon, Object.assign({ name: "Settings" }, p));
-const Scale = (p) => React.createElement(Icon, Object.assign({ name: "Scale" }, p));
-
-
+const Loader2 = p => React.createElement(Icon, Object.assign({
+  name: ["Loader2", "LoaderCircle"]
+}, p));
+const Heart = p => React.createElement(Icon, Object.assign({
+  name: "Heart"
+}, p));
+const Palette = p => React.createElement(Icon, Object.assign({
+  name: "Palette"
+}, p));
+const Wind = p => React.createElement(Icon, Object.assign({
+  name: "Wind"
+}, p));
+const Users = p => React.createElement(Icon, Object.assign({
+  name: "Users"
+}, p));
+const Sprout = p => React.createElement(Icon, Object.assign({
+  name: "Sprout"
+}, p));
+const Flame = p => React.createElement(Icon, Object.assign({
+  name: "Flame"
+}, p));
+const Gamepad2 = p => React.createElement(Icon, Object.assign({
+  name: "Gamepad2"
+}, p));
+const Plus = p => React.createElement(Icon, Object.assign({
+  name: "Plus"
+}, p));
+const Check = p => React.createElement(Icon, Object.assign({
+  name: "Check"
+}, p));
+const Calendar = p => React.createElement(Icon, Object.assign({
+  name: "Calendar"
+}, p));
+const Sparkles = p => React.createElement(Icon, Object.assign({
+  name: "Sparkles"
+}, p));
+const X = p => React.createElement(Icon, Object.assign({
+  name: "X"
+}, p));
+const ChevronLeft = p => React.createElement(Icon, Object.assign({
+  name: "ChevronLeft"
+}, p));
+const ChevronRight = p => React.createElement(Icon, Object.assign({
+  name: "ChevronRight"
+}, p));
+const Moon = p => React.createElement(Icon, Object.assign({
+  name: "Moon"
+}, p));
+const User = p => React.createElement(Icon, Object.assign({
+  name: "User"
+}, p));
+const BookOpen = p => React.createElement(Icon, Object.assign({
+  name: "BookOpen"
+}, p));
+const Trash2 = p => React.createElement(Icon, Object.assign({
+  name: "Trash2"
+}, p));
+const Lock = p => React.createElement(Icon, Object.assign({
+  name: "Lock"
+}, p));
+const Unlock = p => React.createElement(Icon, Object.assign({
+  name: "Unlock"
+}, p));
+const Dumbbell = p => React.createElement(Icon, Object.assign({
+  name: "Dumbbell"
+}, p));
+const Clock = p => React.createElement(Icon, Object.assign({
+  name: "Clock"
+}, p));
+const RefreshCw = p => React.createElement(Icon, Object.assign({
+  name: "RefreshCw"
+}, p));
+const Pencil = p => React.createElement(Icon, Object.assign({
+  name: "Pencil"
+}, p));
+const Utensils = p => React.createElement(Icon, Object.assign({
+  name: "Utensils"
+}, p));
+const Droplet = p => React.createElement(Icon, Object.assign({
+  name: "Droplet"
+}, p));
+const Settings = p => React.createElement(Icon, Object.assign({
+  name: "Settings"
+}, p));
+const Scale = p => React.createElement(Icon, Object.assign({
+  name: "Scale"
+}, p));
 
 /* ----------------------------- Pillars ----------------------------- */
 const PILLARS = {
-  health:     { name: "Health",      color: "#4EC1A6", Icon: Heart,   generatable: false },
-  creativity: { name: "Creativity",  color: "#E8B04B", Icon: Palette,  generatable: true, types: ["drawing", "writing", "collage"] },
-  mindfulness:{ name: "Mindfulness", color: "#A78BE0", Icon: Wind,     generatable: true },
-  socialising:{ name: "Socialising", color: "#EC7A93", Icon: Users,    generatable: true },
-  growth:     { name: "Growth",      color: "#5EA8E8", Icon: Sprout,   generatable: true },
+  health: {
+    name: "Health",
+    color: "#4EC1A6",
+    Icon: Heart,
+    generatable: false
+  },
+  creativity: {
+    name: "Creativity",
+    color: "#E8B04B",
+    Icon: Palette,
+    generatable: true,
+    types: ["drawing", "writing", "collage"]
+  },
+  mindfulness: {
+    name: "Mindfulness",
+    color: "#A78BE0",
+    Icon: Wind,
+    generatable: true
+  },
+  socialising: {
+    name: "Socialising",
+    color: "#EC7A93",
+    Icon: Users,
+    generatable: true
+  },
+  growth: {
+    name: "Growth",
+    color: "#5EA8E8",
+    Icon: Sprout,
+    generatable: true
+  }
 };
 const PILLAR_KEYS = Object.keys(PILLARS);
 
 /* --------------------------- Date helpers -------------------------- */
-const iso = (d) => d.toISOString().slice(0, 10);
+const iso = d => d.toISOString().slice(0, 10);
 const todayISO = () => iso(new Date());
-const addDays = (dateStr, n) => { const d = new Date(dateStr + "T00:00:00"); d.setDate(d.getDate() + n); return iso(d); };
-const dayName = (dateStr) => new Date(dateStr + "T00:00:00").toLocaleDateString("en-US", { weekday: "short" });
-const dayNum = (dateStr) => new Date(dateStr + "T00:00:00").getDate();
-const prettyDate = (dateStr) => new Date(dateStr + "T00:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
-const weekOf = (dateStr) => { const d = new Date(dateStr + "T00:00:00"); const wd = (d.getDay() + 6) % 7; const monday = addDays(dateStr, -wd); return Array.from({ length: 7 }, (_, i) => addDays(monday, i)); };
+const addDays = (dateStr, n) => {
+  const d = new Date(dateStr + "T00:00:00");
+  d.setDate(d.getDate() + n);
+  return iso(d);
+};
+const dayName = dateStr => new Date(dateStr + "T00:00:00").toLocaleDateString("en-US", {
+  weekday: "short"
+});
+const dayNum = dateStr => new Date(dateStr + "T00:00:00").getDate();
+const prettyDate = dateStr => new Date(dateStr + "T00:00:00").toLocaleDateString("en-US", {
+  weekday: "long",
+  month: "long",
+  day: "numeric"
+});
+const weekOf = dateStr => {
+  const d = new Date(dateStr + "T00:00:00");
+  const wd = (d.getDay() + 6) % 7;
+  const monday = addDays(dateStr, -wd);
+  return Array.from({
+    length: 7
+  }, (_, i) => addDays(monday, i));
+};
 
 /* --------------------------- Persistence --------------------------- */
 const KEY = "routine:v2";
@@ -100,25 +248,36 @@ const DEFAULT = {
       level: "Getting back after a break",
       goals: ["Strength / muscle", "General health & energy"],
       equipment: ["Bodyweight", "Dumbbells / bands", "Pull-up & dip bars"],
-      session: 35,
-    },
+      session: 35
+    }
   },
   food: {
     profile: {
       diet: "No restrictions",
       cooking: "Barely — mostly no-cook",
       focus: ["High-protein (for strength)", "Cheap & simple", "Balanced & varied"],
-      mealTimes: [
-        { id: "mt1", slot: "Breakfast", time: "08:00" },
-        { id: "mt2", slot: "Lunch", time: "12:30" },
-        { id: "mt3", slot: "Snack", time: "16:00" },
-        { id: "mt4", slot: "Dinner", time: "19:30" },
-      ],
-      proteinPerKg: 1.6,
+      mealTimes: [{
+        id: "mt1",
+        slot: "Breakfast",
+        time: "08:00"
+      }, {
+        id: "mt2",
+        slot: "Lunch",
+        time: "12:30"
+      }, {
+        id: "mt3",
+        slot: "Snack",
+        time: "16:00"
+      }, {
+        id: "mt4",
+        slot: "Dinner",
+        time: "19:30"
+      }],
+      proteinPerKg: 1.6
     },
     log: {},
-    plan: {},
-  },
+    plan: {}
+  }
 };
 // fill any keys missing from state saved by an earlier version
 function normalize(s) {
@@ -147,32 +306,75 @@ function weighInfo(profile) {
   const due = !last || daysBetween(last.date, todayISO()) >= cadence;
   const prev = log.length > 1 ? log[log.length - 2] : null;
   const delta = last && prev ? +(last.kg - prev.kg).toFixed(1) : null;
-  return { due, last, prev, delta, cadence };
+  return {
+    due,
+    last,
+    prev,
+    delta,
+    cadence
+  };
 }
 const nowHM = () => new Date().toTimeString().slice(0, 5);
-const proteinTargetOf = (profile, fp) => { const w = profile?.weight; const perKg = (fp?.proteinPerKg) || 1.6; return w ? Math.round(w * perKg) : null; };
-async function loadState() { try { const r = await window.storage.get(KEY); if (r && r.value) return JSON.parse(r.value); } catch {} return null; }
-async function saveState(s) { try { await window.storage.set(KEY, JSON.stringify(s)); } catch {} }
+const proteinTargetOf = (profile, fp) => {
+  const w = profile?.weight;
+  const perKg = fp?.proteinPerKg || 1.6;
+  return w ? Math.round(w * perKg) : null;
+};
+async function loadState() {
+  try {
+    const r = await window.storage.get(KEY);
+    if (r && r.value) return JSON.parse(r.value);
+  } catch {}
+  return null;
+}
+async function saveState(s) {
+  try {
+    await window.storage.set(KEY, JSON.stringify(s));
+  } catch {}
+}
 
 /* ------------------------- AI: quick suggest ----------------------- */
 const AI_LS = "fivefold:ai";
-function getAI() { try { return JSON.parse(localStorage.getItem(AI_LS)) || {}; } catch { return {}; } }
-function setAI(cfg) { localStorage.setItem(AI_LS, JSON.stringify(cfg)); }
+function getAI() {
+  try {
+    return JSON.parse(localStorage.getItem(AI_LS)) || {};
+  } catch {
+    return {};
+  }
+}
+function setAI(cfg) {
+  localStorage.setItem(AI_LS, JSON.stringify(cfg));
+}
 async function geminiComplete(prompt, key) {
   const res = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + encodeURIComponent(key), {
-    method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      contents: [{
+        parts: [{
+          text: prompt
+        }]
+      }]
+    })
   });
   if (!res.ok) throw new Error("Gemini HTTP " + res.status);
   const data = await res.json();
-  const parts = (data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) || [];
-  return parts.map((p) => p.text || "").join(" ").trim();
+  const parts = data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts || [];
+  return parts.map(p => p.text || "").join(" ").trim();
 }
-const AI_PROVIDERS = { gemini: geminiComplete };
+const AI_PROVIDERS = {
+  gemini: geminiComplete
+};
 async function callClaude(prompt) {
   const cfg = getAI();
   const key = (cfg.key || "").trim();
-  if (!key) { const e = new Error("Add a free AI key in Settings to use generators."); e.code = "NO_KEY"; throw e; }
+  if (!key) {
+    const e = new Error("Add a free AI key in Settings to use generators.");
+    e.code = "NO_KEY";
+    throw e;
+  }
   const fn = AI_PROVIDERS[cfg.provider || "gemini"] || geminiComplete;
   return fn(prompt, key);
 }
@@ -181,29 +383,27 @@ async function findEvents(city, interests, notes) {
   // Socialising planner fall back to AI-generated "things to do with people" ideas.
   return [];
 }
-
 async function suggestMany(pillarKey, subtype, history) {
   let prompt;
   if (pillarKey === "growth") {
     const hist = (history || []).slice(0, 12);
-    prompt = hist.length
-      ? `A person has recently been doing these growth activities: ${hist.join("; ")}.
-Give 4 growth activities that CONTINUE and build on these existing threads — the next step in the same language, topic, or skill they're already pursuing — so they stay consistent instead of jumping to unrelated new things. If a thread is clearly ongoing (e.g. a language or a subject), advance it. Each a short, specific sentence. Return ONLY a JSON array of 4 strings, no prose, no fences.`
-      : `Give 4 distinct growth activities for someone starting out: e.g. beginning a language, or understanding one idea from science or philosophy. Each a short, specific sentence. Return ONLY a JSON array of 4 strings, no prose, no fences.`;
+    prompt = hist.length ? `A person has recently been doing these growth activities: ${hist.join("; ")}.
+Give 4 growth activities that CONTINUE and build on these existing threads — the next step in the same language, topic, or skill they're already pursuing — so they stay consistent instead of jumping to unrelated new things. If a thread is clearly ongoing (e.g. a language or a subject), advance it. Each a short, specific sentence. Return ONLY a JSON array of 4 strings, no prose, no fences.` : `Give 4 distinct growth activities for someone starting out: e.g. beginning a language, or understanding one idea from science or philosophy. Each a short, specific sentence. Return ONLY a JSON array of 4 strings, no prose, no fences.`;
   } else {
     const themes = {
       creativity: `concrete creative tasks for "${subtype || "drawing"}", each doable in under an hour`,
-      mindfulness:`specific mindful activities (short meditation, calm walk, tidying a space, breathing, journalling)`,
-      socialising:`specific offline things to do with other people that don't need a scheduled event`,
+      mindfulness: `specific mindful activities (short meditation, calm walk, tidying a space, breathing, journalling)`,
+      socialising: `specific offline things to do with other people that don't need a scheduled event`
     };
     prompt = `Give 4 distinct ${themes[pillarKey] || themes.creativity}. Each a short sentence. Return ONLY a JSON array of 4 strings, no prose, no markdown fences.`;
   }
   let txt = await callClaude(prompt);
   txt = txt.replace(/```json|```/g, "").trim();
-  const s = txt.indexOf("["), e = txt.lastIndexOf("]");
+  const s = txt.indexOf("["),
+    e = txt.lastIndexOf("]");
   if (s >= 0 && e >= 0) txt = txt.slice(s, e + 1);
   const arr = JSON.parse(txt);
-  return Array.isArray(arr) ? arr.map((x) => String(x).replace(/^["']|["']$/g, "")).slice(0, 4) : [];
+  return Array.isArray(arr) ? arr.map(x => String(x).replace(/^["']|["']$/g, "")).slice(0, 4) : [];
 }
 
 // growth activity history across all days (most recent first)
@@ -211,7 +411,7 @@ function growthHistory(days) {
   const dates = Object.keys(days).sort().reverse();
   const out = [];
   for (const d of dates) {
-    for (const t of (days[d].tasks || [])) {
+    for (const t of days[d].tasks || []) {
       if (t.pillar === "growth" && !/^read:|^continue reading:/i.test(t.title)) out.push(t.title);
     }
   }
@@ -220,9 +420,7 @@ function growthHistory(days) {
 
 /* ------------------------- AI: workout plan ------------------------ */
 async function buildWorkout(fitness, weekContext, dName) {
-  const ctx = weekContext.length
-    ? weekContext.map((w) => `${w.day}: ${w.title}`).join("; ")
-    : "nothing else physical planned this week yet";
+  const ctx = weekContext.length ? weekContext.map(w => `${w.day}: ${w.title}`).join("; ") : "nothing else physical planned this week yet";
   const prompt = `Plan ONE workout for ${dName}.
 Person: ${fitness.level}. Goals: ${fitness.goals.join(", ")}. Available: ${fitness.equipment.join(", ")}. Target length: about ${fitness.session} minutes.
 Already planned physically THIS WEEK: ${ctx}.
@@ -231,7 +429,8 @@ Return ONLY valid JSON, no prose, no markdown fences:
 {"title":"short name","focus":"e.g. Push / Pull / Legs / Full-body","duration_min":30,"exercises":[{"name":"exercise","detail":"e.g. 3 x 8-10"}]}`;
   let txt = await callClaude(prompt);
   txt = txt.replace(/```json|```/g, "").trim();
-  const start = txt.indexOf("{"), end = txt.lastIndexOf("}");
+  const start = txt.indexOf("{"),
+    end = txt.lastIndexOf("}");
   if (start >= 0 && end >= 0) txt = txt.slice(start, end + 1);
   return JSON.parse(txt);
 }
@@ -248,26 +447,43 @@ Return ONLY valid JSON, no prose, no fences:
 {"meals":[{"slot":"Breakfast","name":"short description","kcal":450}]}`;
   let txt = await callClaude(prompt);
   txt = txt.replace(/```json|```/g, "").trim();
-  const s = txt.indexOf("{"), e = txt.lastIndexOf("}");
+  const s = txt.indexOf("{"),
+    e = txt.lastIndexOf("}");
   if (s >= 0 && e >= 0) txt = txt.slice(s, e + 1);
   const obj = JSON.parse(txt);
   return Array.isArray(obj.meals) ? obj.meals : [];
 }
 function tdeeOf(profile) {
-  const { sex = "m", age, height, weight, activity = 1.375 } = profile || {};
+  const {
+    sex = "m",
+    age,
+    height,
+    weight,
+    activity = 1.375
+  } = profile || {};
   if (!(age && height && weight)) return null;
   const bmr = sex === "m" ? 10 * weight + 6.25 * height - 5 * age + 5 : 10 * weight + 6.25 * height - 5 * age - 161;
   return Math.round(bmr * Number(activity));
 }
-const taskDone = (t) => (t.subtasks && t.subtasks.length ? t.subtasks.every((s) => s.done) : t.done);
-const dayComplete = (day) => { if (!day) return true; if (!day.tasks || day.tasks.length === 0) return true; return day.tasks.every(taskDone); };
+const taskDone = t => t.subtasks && t.subtasks.length ? t.subtasks.every(s => s.done) : t.done;
+const dayComplete = day => {
+  if (!day) return true;
+  if (!day.tasks || day.tasks.length === 0) return true;
+  return day.tasks.every(taskDone);
+};
 function computeStreak(days) {
-  let streak = 0, cursor = todayISO();
+  let streak = 0,
+    cursor = todayISO();
   for (let i = 0; i < 400; i++) {
     const day = days[cursor];
     const hasTasks = day && day.tasks && day.tasks.length > 0;
-    if (cursor === todayISO()) { if (hasTasks && dayComplete(day)) streak++; else if (hasTasks) break; }
-    else { if (dayComplete(day)) { if (hasTasks) streak++; } else break; }
+    if (cursor === todayISO()) {
+      if (hasTasks && dayComplete(day)) streak++;else if (hasTasks) break;
+    } else {
+      if (dayComplete(day)) {
+        if (hasTasks) streak++;
+      } else break;
+    }
     cursor = addDays(cursor, -1);
   }
   return streak;
@@ -279,9 +495,12 @@ function weekPhysical(days, dateStr, excludeDate) {
     if (d === excludeDate) continue;
     const day = days[d];
     if (!day) continue;
-    for (const t of (day.tasks || [])) {
+    for (const t of day.tasks || []) {
       const physical = t.pillar === "health" && /workout|swim|run|gym|ride|cycl|lift|training|leg|push|pull|cardio|walk|yoga|mobility/i.test(t.title);
-      if (physical) out.push({ day: dayName(d), title: t.title });
+      if (physical) out.push({
+        day: dayName(d),
+        title: t.title
+      });
     }
   }
   return out;
@@ -292,192 +511,427 @@ function App() {
   const [state, setState] = useState(null);
   const [tab, setTab] = useState("today");
   const [showSettings, setShowSettings] = useState(false);
-  useEffect(() => { loadState().then((s) => setState(normalize(s))); }, []);
-  useEffect(() => { if (state) saveState(state); }, [state]);
-  const update = useCallback((fn) => setState((prev) => { const n = structuredClone(prev); fn(n); return n; }), []);
-
-  if (!state) return (<div className="ra-root ra-center"><Styles /><Loader2 className="spin" size={28} color="#9A9DB8" /></div>);
+  useEffect(() => {
+    loadState().then(s => setState(normalize(s)));
+  }, []);
+  useEffect(() => {
+    if (state) saveState(state);
+  }, [state]);
+  const update = useCallback(fn => setState(prev => {
+    const n = structuredClone(prev);
+    fn(n);
+    return n;
+  }), []);
+  if (!state) return /*#__PURE__*/React.createElement("div", {
+    className: "ra-root ra-center"
+  }, /*#__PURE__*/React.createElement(Styles, null), /*#__PURE__*/React.createElement(Loader2, {
+    className: "spin",
+    size: 28,
+    color: "#9A9DB8"
+  }));
   const streak = computeStreak(state.days);
-
-  return (
-    <div className="ra-root">
-      <Styles />
-      <header className="ra-top">
-        <div className="ra-brand"><Moon size={17} color="#A78BE0" /><span>Fivefold</span></div>
-        <div className="ra-topright">
-          <div className="ra-streak"><Flame size={16} color={streak > 0 ? "#EC7A93" : "#4A4C6B"} /><span className="mono">{streak}</span></div>
-          <button className="ra-gear" onClick={() => setShowSettings(true)} aria-label="Settings"><Settings size={18} /></button>
-        </div>
-      </header>
-      <main className="ra-main">
-        {tab === "today" && <Today state={state} update={update} />}
-        {tab === "week" && <Week state={state} update={update} />}
-        {tab === "food" && <Food state={state} update={update} />}
-        {tab === "you" && <You state={state} update={update} streak={streak} onOpenSettings={() => setShowSettings(true)} />}
-      </main>
-      <nav className="ra-nav">
-        {[["today","Today",Sparkles],["week","Week",Calendar],["food","Food",Utensils],["you","You",User]].map(([id,label,Ic]) => (
-          <button key={id} className={"ra-navbtn" + (tab === id ? " on" : "")} onClick={() => setTab(id)}><Ic size={20} /><span>{label}</span></button>
-        ))}
-      </nav>
-      {showSettings && <SettingsSheet state={state} update={update} onClose={() => setShowSettings(false)} />}
-    </div>
-  );
+  return /*#__PURE__*/React.createElement("div", {
+    className: "ra-root"
+  }, /*#__PURE__*/React.createElement(Styles, null), /*#__PURE__*/React.createElement("header", {
+    className: "ra-top"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ra-brand"
+  }, /*#__PURE__*/React.createElement(Moon, {
+    size: 17,
+    color: "#A78BE0"
+  }), /*#__PURE__*/React.createElement("span", null, "Fivefold")), /*#__PURE__*/React.createElement("div", {
+    className: "ra-topright"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ra-streak"
+  }, /*#__PURE__*/React.createElement(Flame, {
+    size: 16,
+    color: streak > 0 ? "#EC7A93" : "#4A4C6B"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "mono"
+  }, streak)), /*#__PURE__*/React.createElement("button", {
+    className: "ra-gear",
+    onClick: () => setShowSettings(true),
+    "aria-label": "Settings"
+  }, /*#__PURE__*/React.createElement(Settings, {
+    size: 18
+  })))), /*#__PURE__*/React.createElement("main", {
+    className: "ra-main"
+  }, tab === "today" && /*#__PURE__*/React.createElement(Today, {
+    state: state,
+    update: update
+  }), tab === "week" && /*#__PURE__*/React.createElement(Week, {
+    state: state,
+    update: update
+  }), tab === "food" && /*#__PURE__*/React.createElement(Food, {
+    state: state,
+    update: update
+  }), tab === "you" && /*#__PURE__*/React.createElement(You, {
+    state: state,
+    update: update,
+    streak: streak,
+    onOpenSettings: () => setShowSettings(true)
+  })), /*#__PURE__*/React.createElement("nav", {
+    className: "ra-nav"
+  }, [["today", "Today", Sparkles], ["week", "Week", Calendar], ["food", "Food", Utensils], ["you", "You", User]].map(([id, label, Ic]) => /*#__PURE__*/React.createElement("button", {
+    key: id,
+    className: "ra-navbtn" + (tab === id ? " on" : ""),
+    onClick: () => setTab(id)
+  }, /*#__PURE__*/React.createElement(Ic, {
+    size: 20
+  }), /*#__PURE__*/React.createElement("span", null, label)))), showSettings && /*#__PURE__*/React.createElement(SettingsSheet, {
+    state: state,
+    update: update,
+    onClose: () => setShowSettings(false)
+  }));
 }
-
-function SettingsSheet({ state, update, onClose }) {
-  return (
-    <div className="ra-sheet-wrap" onClick={onClose}>
-      <div className="ra-sheet" onClick={(e) => e.stopPropagation()}>
-        <div className="ra-sheet-top">
-          <div className="ra-sheet-title">Your variables</div>
-          <button className="ra-ghost" onClick={onClose}><X size={20} /></button>
-        </div>
-        <p className="ra-dim ra-small" style={{ marginBottom: 14 }}>Set once and forget — everything here quietly powers your targets, meals, and workouts.</p>
-        <AISettingsCard />
-        <CalorieCard state={state} update={update} />
-        <FitnessCard state={state} update={update} />
-        <FoodProfileCard state={state} update={update} />
-        <EventInterestsCard state={state} update={update} />
-      </div>
-    </div>
-  );
+function SettingsSheet({
+  state,
+  update,
+  onClose
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    className: "ra-sheet-wrap",
+    onClick: onClose
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ra-sheet",
+    onClick: e => e.stopPropagation()
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ra-sheet-top"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ra-sheet-title"
+  }, "Your variables"), /*#__PURE__*/React.createElement("button", {
+    className: "ra-ghost",
+    onClick: onClose
+  }, /*#__PURE__*/React.createElement(X, {
+    size: 20
+  }))), /*#__PURE__*/React.createElement("p", {
+    className: "ra-dim ra-small",
+    style: {
+      marginBottom: 14
+    }
+  }, "Set once and forget — everything here quietly powers your targets, meals, and workouts."), /*#__PURE__*/React.createElement(AISettingsCard, null), /*#__PURE__*/React.createElement(CalorieCard, {
+    state: state,
+    update: update
+  }), /*#__PURE__*/React.createElement(FitnessCard, {
+    state: state,
+    update: update
+  }), /*#__PURE__*/React.createElement(FoodProfileCard, {
+    state: state,
+    update: update
+  }), /*#__PURE__*/React.createElement(EventInterestsCard, {
+    state: state,
+    update: update
+  })));
 }
-
-function EventInterestsCard({ state, update }) {
+function EventInterestsCard({
+  state,
+  update
+}) {
   const ALL = ["Gallery exhibitions", "Markets", "Artist markets", "Underground / small gigs", "Park & outdoor events", "Open-air cinema", "Flea & vintage markets", "Record & zine fairs", "Poetry & spoken word", "Craft & making workshops", "Arthouse screenings", "Listening bars / experimental", "Street food nights"];
   const sel = state.profile.eventInterests || [];
-  const customs = sel.filter((x) => !ALL.includes(x));
+  const customs = sel.filter(x => !ALL.includes(x));
   const [draft, setDraft] = useState("");
-  const toggle = (v) => update((s) => { const cur = s.profile.eventInterests || []; s.profile.eventInterests = cur.includes(v) ? cur.filter((x) => x !== v) : [...cur, v]; });
-  const addCustom = () => { const v = draft.trim(); if (!v) return; update((s) => { const cur = s.profile.eventInterests || []; if (!cur.some((x) => x.toLowerCase() === v.toLowerCase())) s.profile.eventInterests = [...cur, v]; }); setDraft(""); };
-  return (
-    <div className="ra-card" style={{ borderTopColor: "#EC7A93" }}>
-      <div className="ra-card-h"><Users size={16} color="#EC7A93" /> Event interests</div>
-      <p className="ra-dim ra-small" style={{ marginBottom: 10 }}>What events show up. Searches always stay budget-friendly and skip big crowds.</p>
-      <div className="ra-chipwrap">
-        {ALL.map((g) => (<button key={g} className={"ra-mini pink" + (sel.includes(g) ? " on" : "")} onClick={() => toggle(g)}>{g}</button>))}
-        {customs.map((g) => (<button key={g} className="ra-mini pink on" onClick={() => toggle(g)} title="Remove">{g} ×</button>))}
-      </div>
-      <div className="ra-inputrow" style={{ marginTop: 10 }}>
-        <input className="ra-input sm" placeholder="Add your own — e.g. techno, ceramics" value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addCustom()} />
-        <button className="ra-suggest" onClick={addCustom} style={{ color: "#EC7A93", borderColor: "#EC7A93" }}><Plus size={15} /></button>
-      </div>
-    </div>
-  );
+  const toggle = v => update(s => {
+    const cur = s.profile.eventInterests || [];
+    s.profile.eventInterests = cur.includes(v) ? cur.filter(x => x !== v) : [...cur, v];
+  });
+  const addCustom = () => {
+    const v = draft.trim();
+    if (!v) return;
+    update(s => {
+      const cur = s.profile.eventInterests || [];
+      if (!cur.some(x => x.toLowerCase() === v.toLowerCase())) s.profile.eventInterests = [...cur, v];
+    });
+    setDraft("");
+  };
+  return /*#__PURE__*/React.createElement("div", {
+    className: "ra-card",
+    style: {
+      borderTopColor: "#EC7A93"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ra-card-h"
+  }, /*#__PURE__*/React.createElement(Users, {
+    size: 16,
+    color: "#EC7A93"
+  }), " Event interests"), /*#__PURE__*/React.createElement("p", {
+    className: "ra-dim ra-small",
+    style: {
+      marginBottom: 10
+    }
+  }, "What events show up. Searches always stay budget-friendly and skip big crowds."), /*#__PURE__*/React.createElement("div", {
+    className: "ra-chipwrap"
+  }, ALL.map(g => /*#__PURE__*/React.createElement("button", {
+    key: g,
+    className: "ra-mini pink" + (sel.includes(g) ? " on" : ""),
+    onClick: () => toggle(g)
+  }, g)), customs.map(g => /*#__PURE__*/React.createElement("button", {
+    key: g,
+    className: "ra-mini pink on",
+    onClick: () => toggle(g),
+    title: "Remove"
+  }, g, " ×"))), /*#__PURE__*/React.createElement("div", {
+    className: "ra-inputrow",
+    style: {
+      marginTop: 10
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    className: "ra-input sm",
+    placeholder: "Add your own — e.g. techno, ceramics",
+    value: draft,
+    onChange: e => setDraft(e.target.value),
+    onKeyDown: e => e.key === "Enter" && addCustom()
+  }), /*#__PURE__*/React.createElement("button", {
+    className: "ra-suggest",
+    onClick: addCustom,
+    style: {
+      color: "#EC7A93",
+      borderColor: "#EC7A93"
+    }
+  }, /*#__PURE__*/React.createElement(Plus, {
+    size: 15
+  }))));
 }
 
 /* ------------------------------ TODAY ------------------------------ */
-function TaskEditor({ task, onSave, onCancel }) {
+function TaskEditor({
+  task,
+  onSave,
+  onCancel
+}) {
   const [title, setTitle] = useState(task.title);
   const [time, setTime] = useState(task.time || "");
-  return (
-    <div className="ra-editrow">
-      <input className="ra-input sm" value={title} onChange={(e) => setTitle(e.target.value)} autoFocus />
-      <div className="ra-editctrl">
-        <div className="ra-timepick"><Clock size={14} color="#9A9DB8" /><input className="ra-input tiny" type="time" value={time} onChange={(e) => setTime(e.target.value)} /></div>
-        <button className="ra-book-btn on" onClick={() => onSave({ title: title.trim() || task.title, time })}>Save</button>
-        <button className="ra-ghost sm" onClick={onCancel}><X size={16} /></button>
-      </div>
-    </div>
-  );
+  return /*#__PURE__*/React.createElement("div", {
+    className: "ra-editrow"
+  }, /*#__PURE__*/React.createElement("input", {
+    className: "ra-input sm",
+    value: title,
+    onChange: e => setTitle(e.target.value),
+    autoFocus: true
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "ra-editctrl"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ra-timepick"
+  }, /*#__PURE__*/React.createElement(Clock, {
+    size: 14,
+    color: "#9A9DB8"
+  }), /*#__PURE__*/React.createElement("input", {
+    className: "ra-input tiny",
+    type: "time",
+    value: time,
+    onChange: e => setTime(e.target.value)
+  })), /*#__PURE__*/React.createElement("button", {
+    className: "ra-book-btn on",
+    onClick: () => onSave({
+      title: title.trim() || task.title,
+      time
+    })
+  }, "Save"), /*#__PURE__*/React.createElement("button", {
+    className: "ra-ghost sm",
+    onClick: onCancel
+  }, /*#__PURE__*/React.createElement(X, {
+    size: 16
+  }))));
 }
-
-function Today({ state, update }) {
+function Today({
+  state,
+  update
+}) {
   const t = todayISO();
-  const day = state.days[t] || { tasks: [], light: false };
+  const day = state.days[t] || {
+    tasks: [],
+    light: false
+  };
   const tasks = [...(day.tasks || [])].sort((a, b) => (a.time || "99:99").localeCompare(b.time || "99:99"));
   const doneCount = tasks.filter(taskDone).length;
   const allDone = tasks.length > 0 && doneCount === tasks.length;
-  const pct = tasks.length ? Math.round((doneCount / tasks.length) * 100) : 0;
-
-  const toggleTask = (id) => update((s) => { const dd = s.days[t]; const task = dd?.tasks.find((x) => x.id === id); if (task && (!task.subtasks || !task.subtasks.length)) task.done = !task.done; });
-  const toggleSub = (id, sid) => update((s) => { const dd = s.days[t]; const task = dd?.tasks.find((x) => x.id === id); const sub = task?.subtasks.find((x) => x.id === sid); if (sub) sub.done = !sub.done; });
-  const removeTask = (id) => update((s) => { const dd = s.days[t]; if (dd) dd.tasks = dd.tasks.filter((x) => x.id !== id); });
-  const editTask = (id, patch) => update((s) => { const dd = s.days[t]; const task = dd?.tasks.find((x) => x.id === id); if (task) Object.assign(task, patch); });
+  const pct = tasks.length ? Math.round(doneCount / tasks.length * 100) : 0;
+  const toggleTask = id => update(s => {
+    const dd = s.days[t];
+    const task = dd?.tasks.find(x => x.id === id);
+    if (task && (!task.subtasks || !task.subtasks.length)) task.done = !task.done;
+  });
+  const toggleSub = (id, sid) => update(s => {
+    const dd = s.days[t];
+    const task = dd?.tasks.find(x => x.id === id);
+    const sub = task?.subtasks.find(x => x.id === sid);
+    if (sub) sub.done = !sub.done;
+  });
+  const removeTask = id => update(s => {
+    const dd = s.days[t];
+    if (dd) dd.tasks = dd.tasks.filter(x => x.id !== id);
+  });
+  const editTask = (id, patch) => update(s => {
+    const dd = s.days[t];
+    const task = dd?.tasks.find(x => x.id === id);
+    if (task) Object.assign(task, patch);
+  });
   const [editId, setEditId] = useState(null);
-
-  return (
-    <div className="ra-view">
-      <p className="ra-eyebrow">{day.light ? "Light day" : "Today"}</p>
-      <h1 className="ra-h1">{prettyDate(t)}</h1>
-      <div className="ra-progress"><div className="ra-bar"><div className="ra-fill" style={{ width: pct + "%" }} /></div><span className="mono ra-pct">{doneCount}/{tasks.length}</span></div>
-
-      {tasks.length === 0 ? (
-        <div className="ra-empty"><p>{day.light ? "A light day — nothing planned. Rest counts." : "Nothing scheduled yet."}</p><p className="ra-dim">Open the Week tab to build your day.</p></div>
-      ) : (
-        <div className="ra-timeline">
-          {tasks.map((task) => (
-            <div key={task.id} className="ra-tl-row">
-              <div className="ra-tl-time"><span className="mono">{task.time || "—"}</span></div>
-              <div className="ra-tl-dot" style={{ background: PILLARS[task.pillar].color }} />
-              <div className="ra-tl-task">
-                {editId === task.id ? (
-                  <TaskEditor task={task} onSave={(patch) => { editTask(task.id, patch); setEditId(null); }} onCancel={() => setEditId(null)} />
-                ) : (
-                  <>
-                    <TaskCard task={task} onToggle={() => toggleTask(task.id)} onToggleSub={(sid) => toggleSub(task.id, sid)} />
-                    <div className="ra-tl-btns">
-                      <button className="ra-tl-del" onClick={() => setEditId(task.id)} aria-label="Edit task"><Pencil size={14} /></button>
-                      <button className="ra-tl-del" onClick={() => removeTask(task.id)} aria-label="Delete task"><Trash2 size={14} /></button>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-      <RewardCard allDone={allDone} empty={tasks.length === 0} />
-    </div>
-  );
+  return /*#__PURE__*/React.createElement("div", {
+    className: "ra-view"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "ra-eyebrow"
+  }, day.light ? "Light day" : "Today"), /*#__PURE__*/React.createElement("h1", {
+    className: "ra-h1"
+  }, prettyDate(t)), /*#__PURE__*/React.createElement("div", {
+    className: "ra-progress"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ra-bar"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ra-fill",
+    style: {
+      width: pct + "%"
+    }
+  })), /*#__PURE__*/React.createElement("span", {
+    className: "mono ra-pct"
+  }, doneCount, "/", tasks.length)), tasks.length === 0 ? /*#__PURE__*/React.createElement("div", {
+    className: "ra-empty"
+  }, /*#__PURE__*/React.createElement("p", null, day.light ? "A light day — nothing planned. Rest counts." : "Nothing scheduled yet."), /*#__PURE__*/React.createElement("p", {
+    className: "ra-dim"
+  }, "Open the Week tab to build your day.")) : /*#__PURE__*/React.createElement("div", {
+    className: "ra-timeline"
+  }, tasks.map(task => /*#__PURE__*/React.createElement("div", {
+    key: task.id,
+    className: "ra-tl-row"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ra-tl-time"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "mono"
+  }, task.time || "—")), /*#__PURE__*/React.createElement("div", {
+    className: "ra-tl-dot",
+    style: {
+      background: PILLARS[task.pillar].color
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "ra-tl-task"
+  }, editId === task.id ? /*#__PURE__*/React.createElement(TaskEditor, {
+    task: task,
+    onSave: patch => {
+      editTask(task.id, patch);
+      setEditId(null);
+    },
+    onCancel: () => setEditId(null)
+  }) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(TaskCard, {
+    task: task,
+    onToggle: () => toggleTask(task.id),
+    onToggleSub: sid => toggleSub(task.id, sid)
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "ra-tl-btns"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "ra-tl-del",
+    onClick: () => setEditId(task.id),
+    "aria-label": "Edit task"
+  }, /*#__PURE__*/React.createElement(Pencil, {
+    size: 14
+  })), /*#__PURE__*/React.createElement("button", {
+    className: "ra-tl-del",
+    onClick: () => removeTask(task.id),
+    "aria-label": "Delete task"
+  }, /*#__PURE__*/React.createElement(Trash2, {
+    size: 14
+  })))))))), /*#__PURE__*/React.createElement(RewardCard, {
+    allDone: allDone,
+    empty: tasks.length === 0
+  }));
 }
-
-function TaskCard({ task, onToggle, onToggleSub }) {
+function TaskCard({
+  task,
+  onToggle,
+  onToggleSub
+}) {
   const p = PILLARS[task.pillar];
   const composite = task.subtasks && task.subtasks.length > 0;
   const done = taskDone(task);
-  return (
-    <div className="ra-task" style={{ borderLeftColor: p.color, opacity: done ? 0.55 : 1 }}>
-      <div className="ra-task-head" onClick={composite ? undefined : onToggle} style={{ cursor: composite ? "default" : "pointer" }}>
-        {!composite && (<span className="ra-check" style={{ background: done ? p.color : "transparent", borderColor: p.color }}>{done && <Check size={13} color="#16182B" strokeWidth={3} />}</span>)}
-        <div className="ra-task-body">
-          <span className="ra-pilllabel" style={{ color: p.color }}><p.Icon size={12} /> {p.name}</span>
-          <span className={"ra-task-title" + (done ? " struck" : "")}>{task.title}</span>
-        </div>
-      </div>
-      {composite && (
-        <div className="ra-subs">
-          {task.subtasks.map((s) => (
-            <button key={s.id} className="ra-sub" onClick={() => onToggleSub(s.id)}>
-              <span className="ra-check sm" style={{ background: s.done ? p.color : "transparent", borderColor: p.color }}>{s.done && <Check size={11} color="#16182B" strokeWidth={3} />}</span>
-              <span className={s.done ? "struck" : ""}>{s.title}{s.detail ? <em className="ra-detail"> · {s.detail}</em> : null}</span>
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
+  return /*#__PURE__*/React.createElement("div", {
+    className: "ra-task",
+    style: {
+      borderLeftColor: p.color,
+      opacity: done ? 0.55 : 1
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ra-task-head",
+    onClick: composite ? undefined : onToggle,
+    style: {
+      cursor: composite ? "default" : "pointer"
+    }
+  }, !composite && /*#__PURE__*/React.createElement("span", {
+    className: "ra-check",
+    style: {
+      background: done ? p.color : "transparent",
+      borderColor: p.color
+    }
+  }, done && /*#__PURE__*/React.createElement(Check, {
+    size: 13,
+    color: "#16182B",
+    strokeWidth: 3
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "ra-task-body"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "ra-pilllabel",
+    style: {
+      color: p.color
+    }
+  }, /*#__PURE__*/React.createElement(p.Icon, {
+    size: 12
+  }), " ", p.name), /*#__PURE__*/React.createElement("span", {
+    className: "ra-task-title" + (done ? " struck" : "")
+  }, task.title))), composite && /*#__PURE__*/React.createElement("div", {
+    className: "ra-subs"
+  }, task.subtasks.map(s => /*#__PURE__*/React.createElement("button", {
+    key: s.id,
+    className: "ra-sub",
+    onClick: () => onToggleSub(s.id)
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "ra-check sm",
+    style: {
+      background: s.done ? p.color : "transparent",
+      borderColor: p.color
+    }
+  }, s.done && /*#__PURE__*/React.createElement(Check, {
+    size: 11,
+    color: "#16182B",
+    strokeWidth: 3
+  })), /*#__PURE__*/React.createElement("span", {
+    className: s.done ? "struck" : ""
+  }, s.title, s.detail ? /*#__PURE__*/React.createElement("em", {
+    className: "ra-detail"
+  }, " · ", s.detail) : null)))));
 }
-
-function RewardCard({ allDone, empty }) {
+function RewardCard({
+  allDone,
+  empty
+}) {
   if (empty) return null;
-  return (
-    <div className={"ra-reward" + (allDone ? " open" : "")}>
-      {allDone ? <Unlock size={22} color="#E8B04B" /> : <Lock size={22} color="#4A4C6B" />}
-      <div><div className="ra-reward-title">{allDone ? "Reward unlocked" : "Reward locked"}</div><div className="ra-reward-sub">{allDone ? "The day is yours — game guilt-free." : "Finish today's schedule to earn your game time."}</div></div>
-      <Gamepad2 size={20} color={allDone ? "#E8B04B" : "#4A4C6B"} />
-    </div>
-  );
+  return /*#__PURE__*/React.createElement("div", {
+    className: "ra-reward" + (allDone ? " open" : "")
+  }, allDone ? /*#__PURE__*/React.createElement(Unlock, {
+    size: 22,
+    color: "#E8B04B"
+  }) : /*#__PURE__*/React.createElement(Lock, {
+    size: 22,
+    color: "#4A4C6B"
+  }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "ra-reward-title"
+  }, allDone ? "Reward unlocked" : "Reward locked"), /*#__PURE__*/React.createElement("div", {
+    className: "ra-reward-sub"
+  }, allDone ? "The day is yours — game guilt-free." : "Finish today's schedule to earn your game time.")), /*#__PURE__*/React.createElement(Gamepad2, {
+    size: 20,
+    color: allDone ? "#E8B04B" : "#4A4C6B"
+  }));
 }
 
 /* ------------------------------ WEEK ------------------------------- */
 const WEEK_GOAL = 3;
 function weekPillarProgress(days, anchor) {
-  const prog = {}; PILLAR_KEYS.forEach((k) => (prog[k] = { done: 0, total: 0 }));
+  const prog = {};
+  PILLAR_KEYS.forEach(k => prog[k] = {
+    done: 0,
+    total: 0
+  });
   for (const d of weekOf(anchor)) {
-    const day = days[d]; if (!day) continue;
-    for (const t of (day.tasks || [])) {
+    const day = days[d];
+    if (!day) continue;
+    for (const t of day.tasks || []) {
       if (!prog[t.pillar]) continue;
       prog[t.pillar].total++;
       if (taskDone(t)) prog[t.pillar].done++;
@@ -485,125 +939,279 @@ function weekPillarProgress(days, anchor) {
   }
   return prog;
 }
-
-function WeeklyGoal({ prog }) {
-  const met = PILLAR_KEYS.filter((k) => prog[k].done >= WEEK_GOAL).length;
-  return (
-    <div className="ra-goal">
-      <div className="ra-goal-h"><span>Weekly goal · {WEEK_GOAL} per pillar</span><span className="mono ra-goal-met">{met}/5</span></div>
-      <div className="ra-goal-rows">
-        {PILLAR_KEYS.map((k) => {
-          const p = PILLARS[k]; const { done, total } = prog[k];
-          const hit = done >= WEEK_GOAL;
-          const donePct = Math.min(100, (done / WEEK_GOAL) * 100);
-          const schedPct = Math.min(100, (total / WEEK_GOAL) * 100);
-          return (
-            <div key={k} className="ra-goal-row">
-              <span className="ra-goal-name" style={{ color: p.color }}><p.Icon size={13} /> {p.name}</span>
-              <div className="ra-goal-bar">
-                <div className="ra-goal-sched" style={{ width: schedPct + "%", background: p.color }} />
-                <div className="ra-goal-fill" style={{ width: donePct + "%", background: p.color }} />
-              </div>
-              <span className={"ra-goal-count mono" + (hit ? " met" : "")}>{done}/{WEEK_GOAL}{hit ? " ✓" : ""}</span>
-            </div>
-          );
-        })}
-      </div>
-      {met === 5 && <div className="ra-goal-done">All five pillars hit — full week ✦</div>}
-    </div>
-  );
+function WeeklyGoal({
+  prog
+}) {
+  const met = PILLAR_KEYS.filter(k => prog[k].done >= WEEK_GOAL).length;
+  return /*#__PURE__*/React.createElement("div", {
+    className: "ra-goal"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ra-goal-h"
+  }, /*#__PURE__*/React.createElement("span", null, "Weekly goal · ", WEEK_GOAL, " per pillar"), /*#__PURE__*/React.createElement("span", {
+    className: "mono ra-goal-met"
+  }, met, "/5")), /*#__PURE__*/React.createElement("div", {
+    className: "ra-goal-rows"
+  }, PILLAR_KEYS.map(k => {
+    const p = PILLARS[k];
+    const {
+      done,
+      total
+    } = prog[k];
+    const hit = done >= WEEK_GOAL;
+    const donePct = Math.min(100, done / WEEK_GOAL * 100);
+    const schedPct = Math.min(100, total / WEEK_GOAL * 100);
+    return /*#__PURE__*/React.createElement("div", {
+      key: k,
+      className: "ra-goal-row"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "ra-goal-name",
+      style: {
+        color: p.color
+      }
+    }, /*#__PURE__*/React.createElement(p.Icon, {
+      size: 13
+    }), " ", p.name), /*#__PURE__*/React.createElement("div", {
+      className: "ra-goal-bar"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "ra-goal-sched",
+      style: {
+        width: schedPct + "%",
+        background: p.color
+      }
+    }), /*#__PURE__*/React.createElement("div", {
+      className: "ra-goal-fill",
+      style: {
+        width: donePct + "%",
+        background: p.color
+      }
+    })), /*#__PURE__*/React.createElement("span", {
+      className: "ra-goal-count mono" + (hit ? " met" : "")
+    }, done, "/", WEEK_GOAL, hit ? " ✓" : ""));
+  })), met === 5 && /*#__PURE__*/React.createElement("div", {
+    className: "ra-goal-done"
+  }, "All five pillars hit — full week ✦"));
 }
-
-function Week({ state, update }) {
+function Week({
+  state,
+  update
+}) {
   const [anchor, setAnchor] = useState(todayISO());
   const [editing, setEditing] = useState(null);
   const days = weekOf(anchor);
-  const toggleLight = (d) => update((s) => { if (!s.days[d]) s.days[d] = { tasks: [], light: false }; s.days[d].light = !s.days[d].light; });
-
-  return (
-    <div className="ra-view">
-      <p className="ra-eyebrow">Plan the week</p>
-      <WeeklyGoal prog={weekPillarProgress(state.days, anchor)} />
-      <div className="ra-weekhead">
-        <button className="ra-ghost" onClick={() => setAnchor(addDays(anchor, -7))}><ChevronLeft size={18} /></button>
-        <span className="ra-weekrange">{prettyDate(days[0]).replace(/,.*/, "")} – {prettyDate(days[6]).replace(/^[^,]*,\s*/, "")}</span>
-        <button className="ra-ghost" onClick={() => setAnchor(addDays(anchor, 7))}><ChevronRight size={18} /></button>
-      </div>
-      <div className="ra-daylist">
-        {days.map((d) => {
-          const day = state.days[d] || { tasks: [], light: false };
-          const n = (day.tasks || []).length; const isToday = d === todayISO(); const over = n > 3;
-          return (
-            <div key={d} className={"ra-daycard" + (isToday ? " today" : "")}>
-              <div className="ra-day-l">
-                <div className="ra-day-date"><span className="ra-dow">{dayName(d)}</span><span className="mono ra-dnum">{dayNum(d)}</span></div>
-                <div className="ra-day-mid">
-                  <div className="ra-day-dots">{(day.tasks || []).map((tk) => (<span key={tk.id} className="ra-dot" style={{ background: PILLARS[tk.pillar].color }} />))}{n === 0 && <span className="ra-dim ra-small">empty</span>}</div>
-                  <div className="ra-day-meta">{day.light && <span className="ra-tag">light</span>}<span className={"ra-small " + (over ? "ra-warn" : "ra-dim")}>{n} {over ? "· over 3" : n === 1 ? "task" : "tasks"}</span></div>
-                </div>
-              </div>
-              <div className="ra-day-actions">
-                <button className={"ra-lightbtn" + (day.light ? " on" : "")} onClick={() => toggleLight(d)}><Moon size={15} /></button>
-                <button className="ra-addbtn" onClick={() => setEditing(d)}><Plus size={16} /> Plan</button>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-      {editing && <DayPlanner date={editing} state={state} update={update} onClose={() => setEditing(null)} />}
-    </div>
-  );
+  const toggleLight = d => update(s => {
+    if (!s.days[d]) s.days[d] = {
+      tasks: [],
+      light: false
+    };
+    s.days[d].light = !s.days[d].light;
+  });
+  return /*#__PURE__*/React.createElement("div", {
+    className: "ra-view"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "ra-eyebrow"
+  }, "Plan the week"), /*#__PURE__*/React.createElement(WeeklyGoal, {
+    prog: weekPillarProgress(state.days, anchor)
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "ra-weekhead"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "ra-ghost",
+    onClick: () => setAnchor(addDays(anchor, -7))
+  }, /*#__PURE__*/React.createElement(ChevronLeft, {
+    size: 18
+  })), /*#__PURE__*/React.createElement("span", {
+    className: "ra-weekrange"
+  }, prettyDate(days[0]).replace(/,.*/, ""), " – ", prettyDate(days[6]).replace(/^[^,]*,\s*/, "")), /*#__PURE__*/React.createElement("button", {
+    className: "ra-ghost",
+    onClick: () => setAnchor(addDays(anchor, 7))
+  }, /*#__PURE__*/React.createElement(ChevronRight, {
+    size: 18
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "ra-daylist"
+  }, days.map(d => {
+    const day = state.days[d] || {
+      tasks: [],
+      light: false
+    };
+    const n = (day.tasks || []).length;
+    const isToday = d === todayISO();
+    const over = n > 3;
+    return /*#__PURE__*/React.createElement("div", {
+      key: d,
+      className: "ra-daycard" + (isToday ? " today" : "")
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "ra-day-l"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "ra-day-date"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "ra-dow"
+    }, dayName(d)), /*#__PURE__*/React.createElement("span", {
+      className: "mono ra-dnum"
+    }, dayNum(d))), /*#__PURE__*/React.createElement("div", {
+      className: "ra-day-mid"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "ra-day-dots"
+    }, (day.tasks || []).map(tk => /*#__PURE__*/React.createElement("span", {
+      key: tk.id,
+      className: "ra-dot",
+      style: {
+        background: PILLARS[tk.pillar].color
+      }
+    })), n === 0 && /*#__PURE__*/React.createElement("span", {
+      className: "ra-dim ra-small"
+    }, "empty")), /*#__PURE__*/React.createElement("div", {
+      className: "ra-day-meta"
+    }, day.light && /*#__PURE__*/React.createElement("span", {
+      className: "ra-tag"
+    }, "light"), /*#__PURE__*/React.createElement("span", {
+      className: "ra-small " + (over ? "ra-warn" : "ra-dim")
+    }, n, " ", over ? "· over 3" : n === 1 ? "task" : "tasks")))), /*#__PURE__*/React.createElement("div", {
+      className: "ra-day-actions"
+    }, /*#__PURE__*/React.createElement("button", {
+      className: "ra-lightbtn" + (day.light ? " on" : ""),
+      onClick: () => toggleLight(d)
+    }, /*#__PURE__*/React.createElement(Moon, {
+      size: 15
+    })), /*#__PURE__*/React.createElement("button", {
+      className: "ra-addbtn",
+      onClick: () => setEditing(d)
+    }, /*#__PURE__*/React.createElement(Plus, {
+      size: 16
+    }), " Plan")));
+  })), editing && /*#__PURE__*/React.createElement(DayPlanner, {
+    date: editing,
+    state: state,
+    update: update,
+    onClose: () => setEditing(null)
+  }));
 }
 
 /* -------------------------- Day planner ---------------------------- */
-function DayPlanner({ date, state, update, onClose }) {
-  const day = state.days[date] || { tasks: [], light: false };
-  const isPast = date < todayISO(); const isToday = date === todayISO();
-  const addTask = (task) => update((s) => { if (!s.days[date]) s.days[date] = { tasks: [], light: false }; s.days[date].tasks.push(task); });
-  const addTaskTo = (d, task) => update((s) => { if (!s.days[d]) s.days[d] = { tasks: [], light: false }; s.days[d].tasks.push(task); });
-  const removeTask = (id) => update((s) => { const dd = s.days[date]; if (dd) dd.tasks = dd.tasks.filter((x) => x.id !== id); });
-  const editTask = (id, patch) => update((s) => { const dd = s.days[date]; const task = dd?.tasks.find((x) => x.id === id); if (task) Object.assign(task, patch); });
+function DayPlanner({
+  date,
+  state,
+  update,
+  onClose
+}) {
+  const day = state.days[date] || {
+    tasks: [],
+    light: false
+  };
+  const isPast = date < todayISO();
+  const isToday = date === todayISO();
+  const addTask = task => update(s => {
+    if (!s.days[date]) s.days[date] = {
+      tasks: [],
+      light: false
+    };
+    s.days[date].tasks.push(task);
+  });
+  const addTaskTo = (d, task) => update(s => {
+    if (!s.days[d]) s.days[d] = {
+      tasks: [],
+      light: false
+    };
+    s.days[d].tasks.push(task);
+  });
+  const removeTask = id => update(s => {
+    const dd = s.days[date];
+    if (dd) dd.tasks = dd.tasks.filter(x => x.id !== id);
+  });
+  const editTask = (id, patch) => update(s => {
+    const dd = s.days[date];
+    const task = dd?.tasks.find(x => x.id === id);
+    if (task) Object.assign(task, patch);
+  });
   const [editId, setEditId] = useState(null);
   const sorted = [...(day.tasks || [])].sort((a, b) => (a.time || "99:99").localeCompare(b.time || "99:99"));
-
-  return (
-    <div className="ra-sheet-wrap" onClick={onClose}>
-      <div className="ra-sheet" onClick={(e) => e.stopPropagation()}>
-        <div className="ra-sheet-top">
-          <div><div className="ra-sheet-title">{prettyDate(date)}</div><div className="ra-dim ra-small">{isPast ? "Past day — locked" : isToday ? "Today — add or swap, finished work stays" : "Fully editable"}</div></div>
-          <button className="ra-ghost" onClick={onClose}><X size={20} /></button>
-        </div>
-        <div className="ra-sheet-tasks">
-          {sorted.map((tk) => {
-            const p = PILLARS[tk.pillar]; const lockRemove = isPast;
-            if (editId === tk.id && !isPast) {
-              return (
-                <div key={tk.id} className="ra-sheet-task" style={{ borderLeftColor: p.color }}>
-                  <TaskEditor task={tk} onSave={(patch) => { editTask(tk.id, patch); setEditId(null); }} onCancel={() => setEditId(null)} />
-                </div>
-              );
-            }
-            return (
-              <div key={tk.id} className="ra-sheet-task" style={{ borderLeftColor: p.color }}>
-                {tk.time && <span className="mono ra-tasktime">{tk.time}</span>}
-                <span className="ra-pilllabel" style={{ color: p.color }}><p.Icon size={12} /> {p.name}</span>
-                <span className="ra-sheet-tasktitle">{tk.title}</span>
-                {tk.subtasks?.length > 0 && <span className="ra-dim ra-small">{tk.subtasks.length} steps</span>}
-                {!lockRemove && <button className="ra-ghost sm" onClick={() => setEditId(tk.id)}><Pencil size={14} /></button>}
-                {!lockRemove && <button className="ra-ghost sm" onClick={() => removeTask(tk.id)}><Trash2 size={14} /></button>}
-              </div>
-            );
-          })}
-          {(day.tasks || []).length === 0 && <p className="ra-dim ra-small">No tasks yet. Aim for ~3.</p>}
-        </div>
-        {!isPast && <TaskComposer onAdd={addTask} addTaskTo={addTaskTo} count={(day.tasks || []).length} date={date} state={state} update={update} />}
-      </div>
-    </div>
-  );
+  return /*#__PURE__*/React.createElement("div", {
+    className: "ra-sheet-wrap",
+    onClick: onClose
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ra-sheet",
+    onClick: e => e.stopPropagation()
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ra-sheet-top"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "ra-sheet-title"
+  }, prettyDate(date)), /*#__PURE__*/React.createElement("div", {
+    className: "ra-dim ra-small"
+  }, isPast ? "Past day — locked" : isToday ? "Today — add or swap, finished work stays" : "Fully editable")), /*#__PURE__*/React.createElement("button", {
+    className: "ra-ghost",
+    onClick: onClose
+  }, /*#__PURE__*/React.createElement(X, {
+    size: 20
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "ra-sheet-tasks"
+  }, sorted.map(tk => {
+    const p = PILLARS[tk.pillar];
+    const lockRemove = isPast;
+    if (editId === tk.id && !isPast) {
+      return /*#__PURE__*/React.createElement("div", {
+        key: tk.id,
+        className: "ra-sheet-task",
+        style: {
+          borderLeftColor: p.color
+        }
+      }, /*#__PURE__*/React.createElement(TaskEditor, {
+        task: tk,
+        onSave: patch => {
+          editTask(tk.id, patch);
+          setEditId(null);
+        },
+        onCancel: () => setEditId(null)
+      }));
+    }
+    return /*#__PURE__*/React.createElement("div", {
+      key: tk.id,
+      className: "ra-sheet-task",
+      style: {
+        borderLeftColor: p.color
+      }
+    }, tk.time && /*#__PURE__*/React.createElement("span", {
+      className: "mono ra-tasktime"
+    }, tk.time), /*#__PURE__*/React.createElement("span", {
+      className: "ra-pilllabel",
+      style: {
+        color: p.color
+      }
+    }, /*#__PURE__*/React.createElement(p.Icon, {
+      size: 12
+    }), " ", p.name), /*#__PURE__*/React.createElement("span", {
+      className: "ra-sheet-tasktitle"
+    }, tk.title), tk.subtasks?.length > 0 && /*#__PURE__*/React.createElement("span", {
+      className: "ra-dim ra-small"
+    }, tk.subtasks.length, " steps"), !lockRemove && /*#__PURE__*/React.createElement("button", {
+      className: "ra-ghost sm",
+      onClick: () => setEditId(tk.id)
+    }, /*#__PURE__*/React.createElement(Pencil, {
+      size: 14
+    })), !lockRemove && /*#__PURE__*/React.createElement("button", {
+      className: "ra-ghost sm",
+      onClick: () => removeTask(tk.id)
+    }, /*#__PURE__*/React.createElement(Trash2, {
+      size: 14
+    })));
+  }), (day.tasks || []).length === 0 && /*#__PURE__*/React.createElement("p", {
+    className: "ra-dim ra-small"
+  }, "No tasks yet. Aim for ~3.")), !isPast && /*#__PURE__*/React.createElement(TaskComposer, {
+    onAdd: addTask,
+    addTaskTo: addTaskTo,
+    count: (day.tasks || []).length,
+    date: date,
+    state: state,
+    update: update
+  })));
 }
 
 /* --------------------------- Composer ------------------------------ */
-function TaskComposer({ onAdd, addTaskTo, count, date, state, update }) {
+function TaskComposer({
+  onAdd,
+  addTaskTo,
+  count,
+  date,
+  state,
+  update
+}) {
   const [pillar, setPillar] = useState("creativity");
   const [subtype, setSubtype] = useState("drawing");
   const [title, setTitle] = useState("");
@@ -622,281 +1230,683 @@ function TaskComposer({ onAdd, addTaskTo, count, date, state, update }) {
   const [evDay, setEvDay] = useState(date);
   const [evEmpty, setEvEmpty] = useState(false);
   const p = PILLARS[pillar];
-
   const findEv = async () => {
-    setEvErr(""); setEvLoading(true); setEvents(null); setEvEmpty(false);
+    setEvErr("");
+    setEvLoading(true);
+    setEvents(null);
+    setEvEmpty(false);
     try {
       const list = await findEvents(city || "Prague", state.profile.eventInterests);
       setEvents(list);
-      if (update) update((s) => { s.profile.city = city || "Prague"; });
-      if (!list.length) { setEvEmpty(true); doSuggest(); }
+      if (update) update(s => {
+        s.profile.city = city || "Prague";
+      });
+      if (!list.length) {
+        setEvEmpty(true);
+        doSuggest();
+      }
+    } catch {
+      setEvErr("Couldn't fetch events — here are some alternatives instead.");
+      setEvEmpty(true);
+      doSuggest();
+    } finally {
+      setEvLoading(false);
     }
-    catch { setEvErr("Couldn't fetch events — here are some alternatives instead."); setEvEmpty(true); doSuggest(); }
-    finally { setEvLoading(false); }
   };
-
   const doSuggest = async () => {
-    setErr(""); setLoading(true); setIdeas([]);
+    setErr("");
+    setLoading(true);
+    setIdeas([]);
     try {
       const hist = pillar === "growth" ? growthHistory(state.days) : undefined;
       const list = await suggestMany(pillar, pillar === "creativity" ? subtype : undefined, hist);
       setIdeas(list);
+    } catch {
+      setErr("Couldn't reach suggestions — type one for now.");
+    } finally {
+      setLoading(false);
     }
-    catch { setErr("Couldn't reach suggestions — type one for now."); }
-    finally { setLoading(false); }
   };
   const addBook = (bookTitle, mode) => {
     const label = (mode === "continue" ? "Continue reading: " : "Read: ") + bookTitle;
-    onAdd({ id: uid(), pillar: "growth", title: label, time, done: false, subtasks: [] });
+    onAdd({
+      id: uid(),
+      pillar: "growth",
+      title: label,
+      time,
+      done: false,
+      subtasks: []
+    });
     reset();
   };
-  const addSub = () => { if (!subDraft.trim()) return; setSubs([...subs, { id: uid(), title: subDraft.trim(), done: false }]); setSubDraft(""); };
-  const reset = () => { setTitle(""); setSubs([]); setSubDraft(""); setTime(""); setIdeas([]); setBookSel(null); setEvents(null); setCompany(null); setEvDay(date); setEvEmpty(false); };
+  const addSub = () => {
+    if (!subDraft.trim()) return;
+    setSubs([...subs, {
+      id: uid(),
+      title: subDraft.trim(),
+      done: false
+    }]);
+    setSubDraft("");
+  };
+  const reset = () => {
+    setTitle("");
+    setSubs([]);
+    setSubDraft("");
+    setTime("");
+    setIdeas([]);
+    setBookSel(null);
+    setEvents(null);
+    setCompany(null);
+    setEvDay(date);
+    setEvEmpty(false);
+  };
   const commit = () => {
     if (!title.trim()) return;
     let finalTitle = title.trim();
     if (pillar === "socialising" && company) finalTitle += company === "friends" ? " · with friends" : " · solo";
-    const task = { id: uid(), pillar, title: finalTitle, time, done: false, subtasks: subs };
-    if (pillar === "socialising" && evDay && evDay !== date && addTaskTo) addTaskTo(evDay, task);
-    else onAdd(task);
+    const task = {
+      id: uid(),
+      pillar,
+      title: finalTitle,
+      time,
+      done: false,
+      subtasks: subs
+    };
+    if (pillar === "socialising" && evDay && evDay !== date && addTaskTo) addTaskTo(evDay, task);else onAdd(task);
     reset();
   };
 
   // Health workout builder
-  const [wo, setWo] = useState(null); const [woLoading, setWoLoading] = useState(false); const [woErr, setWoErr] = useState("");
+  const [wo, setWo] = useState(null);
+  const [woLoading, setWoLoading] = useState(false);
+  const [woErr, setWoErr] = useState("");
   const genWorkout = async () => {
-    setWoErr(""); setWoLoading(true); setWo(null);
+    setWoErr("");
+    setWoLoading(true);
+    setWo(null);
     try {
       const ctx = weekPhysical(state.days, date, date);
       const plan = await buildWorkout(state.profile.fitness, ctx, dayName(date));
       setWo(plan);
-    } catch { setWoErr("Couldn't build a workout just now — try again."); } finally { setWoLoading(false); }
+    } catch {
+      setWoErr("Couldn't build a workout just now — try again.");
+    } finally {
+      setWoLoading(false);
+    }
   };
   const acceptWorkout = () => {
     if (!wo) return;
-    onAdd({ id: uid(), pillar: "health", title: wo.title + (wo.focus ? ` (${wo.focus})` : ""), time, done: false,
-      subtasks: (wo.exercises || []).map((e) => ({ id: uid(), title: e.name, detail: e.detail || "", done: false })) });
-    setWo(null); reset();
+    onAdd({
+      id: uid(),
+      pillar: "health",
+      title: wo.title + (wo.focus ? ` (${wo.focus})` : ""),
+      time,
+      done: false,
+      subtasks: (wo.exercises || []).map(e => ({
+        id: uid(),
+        title: e.name,
+        detail: e.detail || "",
+        done: false
+      }))
+    });
+    setWo(null);
+    reset();
   };
-
-  return (
-    <div className="ra-composer">
-      <div className="ra-pillrow">
-        {PILLAR_KEYS.map((k) => { const pp = PILLARS[k]; return (
-          <button key={k} className={"ra-pillchip" + (pillar === k ? " on" : "")} onClick={() => { setPillar(k); setWo(null); setIdeas([]); setErr(""); setBookSel(null); setEvents(null); setCompany(null); setEvDay(date); setEvEmpty(false); }}
-            style={pillar === k ? { background: pp.color, borderColor: pp.color, color: "#16182B" } : { borderColor: pp.color, color: pp.color }}>
-            <pp.Icon size={13} /> {pp.name}
-          </button>); })}
-      </div>
-
-      {/* HEALTH: workout builder */}
-      {pillar === "health" && (
-        <div className="ra-wo">
-          <button className="ra-wo-gen" onClick={genWorkout} disabled={woLoading}>
-            {woLoading ? <Loader2 size={16} className="spin" /> : <Dumbbell size={16} />}
-            {woLoading ? "Planning around your week…" : "Build me a workout"}
-          </button>
-          <p className="ra-dim ra-small">Uses your profile + this week's training. Ease in — stop if something hurts.</p>
-          {woErr && <p className="ra-warn ra-small">{woErr}</p>}
-          {wo && (
-            <div className="ra-wo-card">
-              <div className="ra-wo-head"><strong>{wo.title}</strong>{wo.focus && <span className="ra-tag">{wo.focus}</span>}{wo.duration_min && <span className="ra-dim ra-small">~{wo.duration_min} min</span>}</div>
-              <div className="ra-wo-list">{(wo.exercises || []).map((e, i) => (<div key={i} className="ra-wo-ex"><span>{e.name}</span><span className="mono ra-dim ra-small">{e.detail}</span></div>))}</div>
-              <div className="ra-wo-actions">
-                <button className="ra-ghost-btn" onClick={genWorkout}><RefreshCw size={14} /> Regenerate</button>
-                <div className="ra-timepick"><Clock size={14} color="#9A9DB8" /><input className="ra-input tiny" type="time" value={time} onChange={(e) => setTime(e.target.value)} /></div>
-                <button className="ra-primary sm" style={{ background: "#4EC1A6" }} onClick={acceptWorkout}>Add to day</button>
-              </div>
-            </div>
-          )}
-          <div className="ra-or">or add a health task manually</div>
-        </div>
-      )}
-
-      {pillar === "creativity" && (<div className="ra-subtypes">{p.types.map((tp) => (<button key={tp} className={"ra-subtype" + (subtype === tp ? " on" : "")} onClick={() => { setSubtype(tp); setIdeas([]); }}>{tp}</button>))}</div>)}
-
-      {pillar === "growth" && (
-        <div className="ra-books">
-          <div className="ra-books-h"><BookOpen size={15} color="#5EA8E8" /> Read a book</div>
-          {(state.reading || []).length === 0 ? (
-            <p className="ra-dim ra-small">No books yet — add some in the You tab, then start or continue them here.</p>
-          ) : (
-            <>
-              <select className="ra-input sm" value={bookSel || ""} onChange={(e) => setBookSel(e.target.value || null)}>
-                <option value="">Choose a book…</option>
-                {(state.reading || []).map((b) => (<option key={b.id} value={b.id}>{b.title}{b.author ? ` · ${b.author}` : ""}</option>))}
-              </select>
-              {bookSel && (() => {
-                const book = (state.reading || []).find((x) => x.id === bookSel);
-                return book ? (
-                  <div className="ra-bookactions">
-                    <button className="ra-book-btn" onClick={() => addBook(book.title, "start")}>Start</button>
-                    <button className="ra-book-btn on" onClick={() => addBook(book.title, "continue")}>Continue</button>
-                  </div>
-                ) : null;
-              })()}
-            </>
-          )}
-          <div className="ra-or">or plan another growth task</div>
-        </div>
-      )}
-
-      {pillar === "socialising" && (
-        <div className="ra-books">
-          <div className="ra-books-h"><Users size={15} color="#EC7A93" /> Find events near you</div>
-          <p className="ra-dim ra-small">Tuned to your taste — budget-friendly, small & underground. Searches the coming weeks; pick a day for it below. Edit interests in Settings ⚙</p>
-          <div className="ra-inputrow">
-            <input className="ra-input sm" value={city} onChange={(e) => setCity(e.target.value)} placeholder="City" />
-            <button className="ra-book-btn on" style={{ background: "#EC7A93", borderColor: "#EC7A93", flex: "none", padding: "8px 14px" }} onClick={findEv} disabled={evLoading}>{evLoading ? <Loader2 size={14} className="spin" /> : "Search"}</button>
-          </div>
-          {evLoading && <p className="ra-dim ra-small">Searching the web for what's on…</p>}
-          {evErr && <p className="ra-warn ra-small">{evErr}</p>}
-          {events && events.length === 0 && <p className="ra-dim ra-small">No events matched your taste right now — I've generated some alternatives below instead.</p>}
-          {events && events.length > 0 && (
-            <div className="ra-idealist">
-              {events.map((ev, i) => {
-                const label = ev.name + (ev.venue ? ` @ ${ev.venue}` : "");
-                const sel = title === label;
-                return (
-                  <button key={i} className={"ra-idea" + (sel ? " on" : "")} onClick={() => setTitle(label)} style={sel ? { borderColor: "#EC7A93" } : {}}>
-                    <span className="ra-idea-check" style={{ borderColor: "#EC7A93", background: sel ? "#EC7A93" : "transparent" }}>{sel && <Check size={11} color="#16182B" strokeWidth={3} />}</span>
-                    <span><b>{ev.name}</b>{ev.date ? <em className="ra-author"> · {ev.date}</em> : null}{ev.price ? <em className="ra-pricetag"> · {ev.price}</em> : null}{ev.venue ? <span className="ra-dim ra-small"> — {ev.venue}</span> : null}{ev.desc ? <span className="ra-dim ra-small"><br />{ev.desc}</span> : null}</span>
-                  </button>
-                );
-              })}
-            </div>
-          )}
-          <div className="ra-or">or pick a generated idea below</div>
-        </div>
-      )}
-
-      {p.generatable && (
-        <div className="ra-ideas">
-          <button className="ra-ideas-btn" onClick={doSuggest} disabled={loading} style={{ borderColor: p.color, color: p.color }}>
-            {loading ? <Loader2 size={15} className="spin" /> : <Sparkles size={15} />}
-            {loading ? "Finding ideas…" : ideas.length ? "Show me others" : "Not sure? Pick from ideas"}
-          </button>
-          {ideas.length > 0 && (
-            <div className="ra-idealist">
-              {ideas.map((idea, i) => {
-                const sel = title === idea;
-                return (
-                  <button key={i} className={"ra-idea" + (sel ? " on" : "")} onClick={() => setTitle(idea)}
-                    style={sel ? { borderColor: p.color } : {}}>
-                    <span className="ra-idea-check" style={{ borderColor: p.color, background: sel ? p.color : "transparent" }}>{sel && <Check size={11} color="#16182B" strokeWidth={3} />}</span>
-                    <span>{idea}</span>
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
-
-      <div className="ra-inputrow">
-        <input className="ra-input" placeholder={p.generatable ? "…or write your own" : "What will you do?"} value={title} onChange={(e) => setTitle(e.target.value)} />
-      </div>
-      {err && <p className="ra-warn ra-small">{err}</p>}
-      {pillar === "socialising" && (
-        <div className="ra-companyrow">
-          <span className="ra-dim ra-small">Going:</span>
-          <button className={"ra-mini" + (company === "solo" ? " on" : "")} onClick={() => setCompany(company === "solo" ? null : "solo")}>Solo</button>
-          <button className={"ra-mini" + (company === "friends" ? " on" : "")} onClick={() => setCompany(company === "friends" ? null : "friends")}>With friends</button>
-          <span className="ra-dim ra-small" style={{ marginLeft: 6 }}>Day:</span>
-          <input className="ra-input tiny" type="date" min={todayISO()} value={evDay} onChange={(e) => setEvDay(e.target.value)} />
-        </div>
-      )}
-
-      {/* time + subtasks */}
-      <div className="ra-inputrow">
-        <div className="ra-timepick"><Clock size={15} color="#9A9DB8" /><input className="ra-input sm" type="time" value={time} onChange={(e) => setTime(e.target.value)} /><span className="ra-dim ra-small">when</span></div>
-      </div>
-      {subs.length > 0 && <div className="ra-sublist">{subs.map((s) => <span key={s.id} className="ra-subchip">{s.title}</span>)}</div>}
-      <div className="ra-inputrow">
-        <input className="ra-input sm" placeholder="Add a step (optional — makes it composite)" value={subDraft} onChange={(e) => setSubDraft(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addSub()} />
-        <button className="ra-suggest" onClick={addSub}><Plus size={15} /></button>
-      </div>
-      <button className="ra-primary" onClick={commit} disabled={!title.trim()} style={{ background: p.color }}>Add to day {count >= 3 && <span className="ra-overpill">over 3</span>}</button>
-    </div>
-  );
+  return /*#__PURE__*/React.createElement("div", {
+    className: "ra-composer"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ra-pillrow"
+  }, PILLAR_KEYS.map(k => {
+    const pp = PILLARS[k];
+    return /*#__PURE__*/React.createElement("button", {
+      key: k,
+      className: "ra-pillchip" + (pillar === k ? " on" : ""),
+      onClick: () => {
+        setPillar(k);
+        setWo(null);
+        setIdeas([]);
+        setErr("");
+        setBookSel(null);
+        setEvents(null);
+        setCompany(null);
+        setEvDay(date);
+        setEvEmpty(false);
+      },
+      style: pillar === k ? {
+        background: pp.color,
+        borderColor: pp.color,
+        color: "#16182B"
+      } : {
+        borderColor: pp.color,
+        color: pp.color
+      }
+    }, /*#__PURE__*/React.createElement(pp.Icon, {
+      size: 13
+    }), " ", pp.name);
+  })), pillar === "health" && /*#__PURE__*/React.createElement("div", {
+    className: "ra-wo"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "ra-wo-gen",
+    onClick: genWorkout,
+    disabled: woLoading
+  }, woLoading ? /*#__PURE__*/React.createElement(Loader2, {
+    size: 16,
+    className: "spin"
+  }) : /*#__PURE__*/React.createElement(Dumbbell, {
+    size: 16
+  }), woLoading ? "Planning around your week…" : "Build me a workout"), /*#__PURE__*/React.createElement("p", {
+    className: "ra-dim ra-small"
+  }, "Uses your profile + this week's training. Ease in — stop if something hurts."), woErr && /*#__PURE__*/React.createElement("p", {
+    className: "ra-warn ra-small"
+  }, woErr), wo && /*#__PURE__*/React.createElement("div", {
+    className: "ra-wo-card"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ra-wo-head"
+  }, /*#__PURE__*/React.createElement("strong", null, wo.title), wo.focus && /*#__PURE__*/React.createElement("span", {
+    className: "ra-tag"
+  }, wo.focus), wo.duration_min && /*#__PURE__*/React.createElement("span", {
+    className: "ra-dim ra-small"
+  }, "~", wo.duration_min, " min")), /*#__PURE__*/React.createElement("div", {
+    className: "ra-wo-list"
+  }, (wo.exercises || []).map((e, i) => /*#__PURE__*/React.createElement("div", {
+    key: i,
+    className: "ra-wo-ex"
+  }, /*#__PURE__*/React.createElement("span", null, e.name), /*#__PURE__*/React.createElement("span", {
+    className: "mono ra-dim ra-small"
+  }, e.detail)))), /*#__PURE__*/React.createElement("div", {
+    className: "ra-wo-actions"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "ra-ghost-btn",
+    onClick: genWorkout
+  }, /*#__PURE__*/React.createElement(RefreshCw, {
+    size: 14
+  }), " Regenerate"), /*#__PURE__*/React.createElement("div", {
+    className: "ra-timepick"
+  }, /*#__PURE__*/React.createElement(Clock, {
+    size: 14,
+    color: "#9A9DB8"
+  }), /*#__PURE__*/React.createElement("input", {
+    className: "ra-input tiny",
+    type: "time",
+    value: time,
+    onChange: e => setTime(e.target.value)
+  })), /*#__PURE__*/React.createElement("button", {
+    className: "ra-primary sm",
+    style: {
+      background: "#4EC1A6"
+    },
+    onClick: acceptWorkout
+  }, "Add to day"))), /*#__PURE__*/React.createElement("div", {
+    className: "ra-or"
+  }, "or add a health task manually")), pillar === "creativity" && /*#__PURE__*/React.createElement("div", {
+    className: "ra-subtypes"
+  }, p.types.map(tp => /*#__PURE__*/React.createElement("button", {
+    key: tp,
+    className: "ra-subtype" + (subtype === tp ? " on" : ""),
+    onClick: () => {
+      setSubtype(tp);
+      setIdeas([]);
+    }
+  }, tp))), pillar === "growth" && /*#__PURE__*/React.createElement("div", {
+    className: "ra-books"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ra-books-h"
+  }, /*#__PURE__*/React.createElement(BookOpen, {
+    size: 15,
+    color: "#5EA8E8"
+  }), " Read a book"), (state.reading || []).length === 0 ? /*#__PURE__*/React.createElement("p", {
+    className: "ra-dim ra-small"
+  }, "No books yet — add some in the You tab, then start or continue them here.") : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("select", {
+    className: "ra-input sm",
+    value: bookSel || "",
+    onChange: e => setBookSel(e.target.value || null)
+  }, /*#__PURE__*/React.createElement("option", {
+    value: ""
+  }, "Choose a book…"), (state.reading || []).map(b => /*#__PURE__*/React.createElement("option", {
+    key: b.id,
+    value: b.id
+  }, b.title, b.author ? ` · ${b.author}` : ""))), bookSel && (() => {
+    const book = (state.reading || []).find(x => x.id === bookSel);
+    return book ? /*#__PURE__*/React.createElement("div", {
+      className: "ra-bookactions"
+    }, /*#__PURE__*/React.createElement("button", {
+      className: "ra-book-btn",
+      onClick: () => addBook(book.title, "start")
+    }, "Start"), /*#__PURE__*/React.createElement("button", {
+      className: "ra-book-btn on",
+      onClick: () => addBook(book.title, "continue")
+    }, "Continue")) : null;
+  })()), /*#__PURE__*/React.createElement("div", {
+    className: "ra-or"
+  }, "or plan another growth task")), pillar === "socialising" && /*#__PURE__*/React.createElement("div", {
+    className: "ra-books"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ra-books-h"
+  }, /*#__PURE__*/React.createElement(Users, {
+    size: 15,
+    color: "#EC7A93"
+  }), " Find events near you"), /*#__PURE__*/React.createElement("p", {
+    className: "ra-dim ra-small"
+  }, "Tuned to your taste — budget-friendly, small & underground. Searches the coming weeks; pick a day for it below. Edit interests in Settings ⚙"), /*#__PURE__*/React.createElement("div", {
+    className: "ra-inputrow"
+  }, /*#__PURE__*/React.createElement("input", {
+    className: "ra-input sm",
+    value: city,
+    onChange: e => setCity(e.target.value),
+    placeholder: "City"
+  }), /*#__PURE__*/React.createElement("button", {
+    className: "ra-book-btn on",
+    style: {
+      background: "#EC7A93",
+      borderColor: "#EC7A93",
+      flex: "none",
+      padding: "8px 14px"
+    },
+    onClick: findEv,
+    disabled: evLoading
+  }, evLoading ? /*#__PURE__*/React.createElement(Loader2, {
+    size: 14,
+    className: "spin"
+  }) : "Search")), evLoading && /*#__PURE__*/React.createElement("p", {
+    className: "ra-dim ra-small"
+  }, "Searching the web for what's on…"), evErr && /*#__PURE__*/React.createElement("p", {
+    className: "ra-warn ra-small"
+  }, evErr), events && events.length === 0 && /*#__PURE__*/React.createElement("p", {
+    className: "ra-dim ra-small"
+  }, "No events matched your taste right now — I've generated some alternatives below instead."), events && events.length > 0 && /*#__PURE__*/React.createElement("div", {
+    className: "ra-idealist"
+  }, events.map((ev, i) => {
+    const label = ev.name + (ev.venue ? ` @ ${ev.venue}` : "");
+    const sel = title === label;
+    return /*#__PURE__*/React.createElement("button", {
+      key: i,
+      className: "ra-idea" + (sel ? " on" : ""),
+      onClick: () => setTitle(label),
+      style: sel ? {
+        borderColor: "#EC7A93"
+      } : {}
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "ra-idea-check",
+      style: {
+        borderColor: "#EC7A93",
+        background: sel ? "#EC7A93" : "transparent"
+      }
+    }, sel && /*#__PURE__*/React.createElement(Check, {
+      size: 11,
+      color: "#16182B",
+      strokeWidth: 3
+    })), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("b", null, ev.name), ev.date ? /*#__PURE__*/React.createElement("em", {
+      className: "ra-author"
+    }, " · ", ev.date) : null, ev.price ? /*#__PURE__*/React.createElement("em", {
+      className: "ra-pricetag"
+    }, " · ", ev.price) : null, ev.venue ? /*#__PURE__*/React.createElement("span", {
+      className: "ra-dim ra-small"
+    }, " — ", ev.venue) : null, ev.desc ? /*#__PURE__*/React.createElement("span", {
+      className: "ra-dim ra-small"
+    }, /*#__PURE__*/React.createElement("br", null), ev.desc) : null));
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "ra-or"
+  }, "or pick a generated idea below")), p.generatable && /*#__PURE__*/React.createElement("div", {
+    className: "ra-ideas"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "ra-ideas-btn",
+    onClick: doSuggest,
+    disabled: loading,
+    style: {
+      borderColor: p.color,
+      color: p.color
+    }
+  }, loading ? /*#__PURE__*/React.createElement(Loader2, {
+    size: 15,
+    className: "spin"
+  }) : /*#__PURE__*/React.createElement(Sparkles, {
+    size: 15
+  }), loading ? "Finding ideas…" : ideas.length ? "Show me others" : "Not sure? Pick from ideas"), ideas.length > 0 && /*#__PURE__*/React.createElement("div", {
+    className: "ra-idealist"
+  }, ideas.map((idea, i) => {
+    const sel = title === idea;
+    return /*#__PURE__*/React.createElement("button", {
+      key: i,
+      className: "ra-idea" + (sel ? " on" : ""),
+      onClick: () => setTitle(idea),
+      style: sel ? {
+        borderColor: p.color
+      } : {}
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "ra-idea-check",
+      style: {
+        borderColor: p.color,
+        background: sel ? p.color : "transparent"
+      }
+    }, sel && /*#__PURE__*/React.createElement(Check, {
+      size: 11,
+      color: "#16182B",
+      strokeWidth: 3
+    })), /*#__PURE__*/React.createElement("span", null, idea));
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "ra-inputrow"
+  }, /*#__PURE__*/React.createElement("input", {
+    className: "ra-input",
+    placeholder: p.generatable ? "…or write your own" : "What will you do?",
+    value: title,
+    onChange: e => setTitle(e.target.value)
+  })), err && /*#__PURE__*/React.createElement("p", {
+    className: "ra-warn ra-small"
+  }, err), pillar === "socialising" && /*#__PURE__*/React.createElement("div", {
+    className: "ra-companyrow"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "ra-dim ra-small"
+  }, "Going:"), /*#__PURE__*/React.createElement("button", {
+    className: "ra-mini" + (company === "solo" ? " on" : ""),
+    onClick: () => setCompany(company === "solo" ? null : "solo")
+  }, "Solo"), /*#__PURE__*/React.createElement("button", {
+    className: "ra-mini" + (company === "friends" ? " on" : ""),
+    onClick: () => setCompany(company === "friends" ? null : "friends")
+  }, "With friends"), /*#__PURE__*/React.createElement("span", {
+    className: "ra-dim ra-small",
+    style: {
+      marginLeft: 6
+    }
+  }, "Day:"), /*#__PURE__*/React.createElement("input", {
+    className: "ra-input tiny",
+    type: "date",
+    min: todayISO(),
+    value: evDay,
+    onChange: e => setEvDay(e.target.value)
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "ra-inputrow"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ra-timepick"
+  }, /*#__PURE__*/React.createElement(Clock, {
+    size: 15,
+    color: "#9A9DB8"
+  }), /*#__PURE__*/React.createElement("input", {
+    className: "ra-input sm",
+    type: "time",
+    value: time,
+    onChange: e => setTime(e.target.value)
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "ra-dim ra-small"
+  }, "when"))), subs.length > 0 && /*#__PURE__*/React.createElement("div", {
+    className: "ra-sublist"
+  }, subs.map(s => /*#__PURE__*/React.createElement("span", {
+    key: s.id,
+    className: "ra-subchip"
+  }, s.title))), /*#__PURE__*/React.createElement("div", {
+    className: "ra-inputrow"
+  }, /*#__PURE__*/React.createElement("input", {
+    className: "ra-input sm",
+    placeholder: "Add a step (optional — makes it composite)",
+    value: subDraft,
+    onChange: e => setSubDraft(e.target.value),
+    onKeyDown: e => e.key === "Enter" && addSub()
+  }), /*#__PURE__*/React.createElement("button", {
+    className: "ra-suggest",
+    onClick: addSub
+  }, /*#__PURE__*/React.createElement(Plus, {
+    size: 15
+  }))), /*#__PURE__*/React.createElement("button", {
+    className: "ra-primary",
+    onClick: commit,
+    disabled: !title.trim(),
+    style: {
+      background: p.color
+    }
+  }, "Add to day ", count >= 3 && /*#__PURE__*/React.createElement("span", {
+    className: "ra-overpill"
+  }, "over 3")));
 }
 
 /* ------------------------------- YOU ------------------------------- */
-function You({ state, update, streak, onOpenSettings }) {
-  const done = Object.values(state.days).filter((d) => d.tasks?.length).filter(dayComplete).length;
-  return (
-    <div className="ra-view">
-      <p className="ra-eyebrow">You</p>
-      <h1 className="ra-h1">Your baseline</h1>
-      <div className="ra-statrow">
-        <div className="ra-stat"><Flame size={16} color="#EC7A93" /><span className="mono ra-statnum">{streak}</span><span className="ra-dim ra-small">day streak</span></div>
-        <div className="ra-stat"><Check size={16} color="#4EC1A6" /><span className="mono ra-statnum">{done}</span><span className="ra-dim ra-small">days done</span></div>
-        {weighInfo(state.profile).last && (<div className="ra-stat"><Scale size={16} color="#5EA8E8" /><span className="mono ra-statnum">{weighInfo(state.profile).last.kg}</span><span className="ra-dim ra-small">kg{weighInfo(state.profile).delta !== null ? ` · ${weighInfo(state.profile).delta > 0 ? "+" : ""}${weighInfo(state.profile).delta}` : ""}</span></div>)}
-      </div>
-      <ReadingCard state={state} update={update} />
-      <button className="ra-settings-link" onClick={() => onOpenSettings && onOpenSettings()}><Settings size={15} /> Stats, training & food preferences</button>
-    </div>
-  );
+function You({
+  state,
+  update,
+  streak,
+  onOpenSettings
+}) {
+  const done = Object.values(state.days).filter(d => d.tasks?.length).filter(dayComplete).length;
+  return /*#__PURE__*/React.createElement("div", {
+    className: "ra-view"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "ra-eyebrow"
+  }, "You"), /*#__PURE__*/React.createElement("h1", {
+    className: "ra-h1"
+  }, "Your baseline"), /*#__PURE__*/React.createElement("div", {
+    className: "ra-statrow"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ra-stat"
+  }, /*#__PURE__*/React.createElement(Flame, {
+    size: 16,
+    color: "#EC7A93"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "mono ra-statnum"
+  }, streak), /*#__PURE__*/React.createElement("span", {
+    className: "ra-dim ra-small"
+  }, "day streak")), /*#__PURE__*/React.createElement("div", {
+    className: "ra-stat"
+  }, /*#__PURE__*/React.createElement(Check, {
+    size: 16,
+    color: "#4EC1A6"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "mono ra-statnum"
+  }, done), /*#__PURE__*/React.createElement("span", {
+    className: "ra-dim ra-small"
+  }, "days done")), weighInfo(state.profile).last && /*#__PURE__*/React.createElement("div", {
+    className: "ra-stat"
+  }, /*#__PURE__*/React.createElement(Scale, {
+    size: 16,
+    color: "#5EA8E8"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "mono ra-statnum"
+  }, weighInfo(state.profile).last.kg), /*#__PURE__*/React.createElement("span", {
+    className: "ra-dim ra-small"
+  }, "kg", weighInfo(state.profile).delta !== null ? ` · ${weighInfo(state.profile).delta > 0 ? "+" : ""}${weighInfo(state.profile).delta}` : ""))), /*#__PURE__*/React.createElement(ReadingCard, {
+    state: state,
+    update: update
+  }), /*#__PURE__*/React.createElement("button", {
+    className: "ra-settings-link",
+    onClick: () => onOpenSettings && onOpenSettings()
+  }, /*#__PURE__*/React.createElement(Settings, {
+    size: 15
+  }), " Stats, training & food preferences"));
 }
-
-function FitnessCard({ state, update }) {
+function FitnessCard({
+  state,
+  update
+}) {
   const f = state.profile.fitness;
   const LEVELS = ["Beginner / just starting", "Intermediate / train sometimes", "Advanced / train regularly", "Getting back after a break"];
   const GOALS = ["General health & energy", "Strength / muscle", "Endurance & cardio", "Mobility & flexibility"];
   const EQUIP = ["Bodyweight", "Dumbbells / bands", "Pull-up & dip bars", "Full gym", "Pool", "Outdoors"];
-  const setF = (patch) => update((s) => { s.profile.fitness = { ...s.profile.fitness, ...patch }; });
-  const toggle = (arr, v) => (arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
-  return (
-    <div className="ra-card" style={{ borderTopColor: "#4EC1A6" }}>
-      <div className="ra-card-h"><Dumbbell size={16} color="#4EC1A6" /> Training profile</div>
-      <div className="ra-fieldlabel">Level</div>
-      <select className="ra-input sm" value={f.level} onChange={(e) => setF({ level: e.target.value })}>{LEVELS.map((l) => <option key={l}>{l}</option>)}</select>
-      <div className="ra-fieldlabel">Goals</div>
-      <div className="ra-chipwrap">{GOALS.map((g) => (<button key={g} className={"ra-mini" + (f.goals.includes(g) ? " on" : "")} onClick={() => setF({ goals: toggle(f.goals, g) })}>{g}</button>))}</div>
-      <div className="ra-fieldlabel">Equipment</div>
-      <div className="ra-chipwrap">{EQUIP.map((g) => (<button key={g} className={"ra-mini" + (f.equipment.includes(g) ? " on" : "")} onClick={() => setF({ equipment: toggle(f.equipment, g) })}>{g}</button>))}</div>
-      <div className="ra-fieldlabel">Session length: <span className="mono">{f.session} min</span></div>
-      <input type="range" min="15" max="75" step="5" value={f.session} onChange={(e) => setF({ session: +e.target.value })} className="ra-range" />
-    </div>
-  );
+  const setF = patch => update(s => {
+    s.profile.fitness = {
+      ...s.profile.fitness,
+      ...patch
+    };
+  });
+  const toggle = (arr, v) => arr.includes(v) ? arr.filter(x => x !== v) : [...arr, v];
+  return /*#__PURE__*/React.createElement("div", {
+    className: "ra-card",
+    style: {
+      borderTopColor: "#4EC1A6"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ra-card-h"
+  }, /*#__PURE__*/React.createElement(Dumbbell, {
+    size: 16,
+    color: "#4EC1A6"
+  }), " Training profile"), /*#__PURE__*/React.createElement("div", {
+    className: "ra-fieldlabel"
+  }, "Level"), /*#__PURE__*/React.createElement("select", {
+    className: "ra-input sm",
+    value: f.level,
+    onChange: e => setF({
+      level: e.target.value
+    })
+  }, LEVELS.map(l => /*#__PURE__*/React.createElement("option", {
+    key: l
+  }, l))), /*#__PURE__*/React.createElement("div", {
+    className: "ra-fieldlabel"
+  }, "Goals"), /*#__PURE__*/React.createElement("div", {
+    className: "ra-chipwrap"
+  }, GOALS.map(g => /*#__PURE__*/React.createElement("button", {
+    key: g,
+    className: "ra-mini" + (f.goals.includes(g) ? " on" : ""),
+    onClick: () => setF({
+      goals: toggle(f.goals, g)
+    })
+  }, g))), /*#__PURE__*/React.createElement("div", {
+    className: "ra-fieldlabel"
+  }, "Equipment"), /*#__PURE__*/React.createElement("div", {
+    className: "ra-chipwrap"
+  }, EQUIP.map(g => /*#__PURE__*/React.createElement("button", {
+    key: g,
+    className: "ra-mini" + (f.equipment.includes(g) ? " on" : ""),
+    onClick: () => setF({
+      equipment: toggle(f.equipment, g)
+    })
+  }, g))), /*#__PURE__*/React.createElement("div", {
+    className: "ra-fieldlabel"
+  }, "Session length: ", /*#__PURE__*/React.createElement("span", {
+    className: "mono"
+  }, f.session, " min")), /*#__PURE__*/React.createElement("input", {
+    type: "range",
+    min: "15",
+    max: "75",
+    step: "5",
+    value: f.session,
+    onChange: e => setF({
+      session: +e.target.value
+    }),
+    className: "ra-range"
+  }));
 }
-
-function CalorieCard({ state, update }) {
+function CalorieCard({
+  state,
+  update
+}) {
   const pr = state.profile || {};
-  const set = (k, v) => update((s) => { s.profile = { ...s.profile, [k]: v }; });
-  const { sex = "m", age, height, weight, activity = 1.375 } = pr;
+  const set = (k, v) => update(s => {
+    s.profile = {
+      ...s.profile,
+      [k]: v
+    };
+  });
+  const {
+    sex = "m",
+    age,
+    height,
+    weight,
+    activity = 1.375
+  } = pr;
   let tdee = null;
-  if (age && height && weight) { const bmr = sex === "m" ? 10 * weight + 6.25 * height - 5 * age + 5 : 10 * weight + 6.25 * height - 5 * age - 161; tdee = Math.round(bmr * Number(activity)); }
-  return (
-    <div className="ra-card" style={{ borderTopColor: "#4EC1A6" }}>
-      <div className="ra-card-h"><Heart size={16} color="#4EC1A6" /> Daily calorie target</div>
-      <div className="ra-formgrid">
-        <label className="ra-field"><span>Age</span><input className="ra-input sm" type="number" value={age || ""} onChange={(e) => set("age", +e.target.value)} /></label>
-        <label className="ra-field"><span>Height (cm)</span><input className="ra-input sm" type="number" value={height || ""} onChange={(e) => set("height", +e.target.value)} /></label>
-        <label className="ra-field"><span>Weight (kg)</span><input className="ra-input sm" type="number" value={weight || ""} onChange={(e) => set("weight", +e.target.value)} /></label>
-        <label className="ra-field"><span>Sex</span><select className="ra-input sm" value={sex} onChange={(e) => set("sex", e.target.value)}><option value="m">Male</option><option value="f">Female</option></select></label>
-      </div>
-      <div className="ra-fieldlabel">Activity</div>
-      <select className="ra-input sm" value={activity} onChange={(e) => set("activity", e.target.value)}><option value={1.2}>Sedentary</option><option value={1.375}>Light (1–3×/wk)</option><option value={1.55}>Moderate (3–5×/wk)</option><option value={1.725}>Active (6–7×/wk)</option></select>
-      {tdee ? (<div className="ra-tdee"><span className="mono ra-tdee-num">{tdee}</span><span className="ra-dim ra-small">kcal / day to maintain · aim balanced, not extreme</span></div>) : <p className="ra-dim ra-small">Fill the fields for your maintenance estimate.</p>}
-      {weight ? (<div className="ra-tdee" style={{ marginTop: 8 }}><span className="mono ra-tdee-num" style={{ fontSize: 20 }}>{Math.round(weight * (state.food?.profile?.proteinPerKg || 1.6))}g</span><span className="ra-dim ra-small">protein / day target (~{state.food?.profile?.proteinPerKg || 1.6}g per kg, for strength)</span></div>) : null}
-      <div className="ra-fieldlabel">Weigh-in reminder</div>
-      <select className="ra-input sm" value={pr.weighCadence || "weekly"} onChange={(e) => set("weighCadence", e.target.value)}><option value="weekly">Weekly</option><option value="biweekly">Every 2 weeks</option></select>
-      {(pr.weightLog || []).length > 1 && (
-        <div className="ra-weighhist">
-          {[...pr.weightLog].slice(-5).reverse().map((w, i) => (<div key={i} className="ra-weighrow"><span className="ra-dim ra-small">{w.date}</span><span className="mono ra-small">{w.kg} kg</span></div>))}
-        </div>
-      )}
-    </div>
-  );
+  if (age && height && weight) {
+    const bmr = sex === "m" ? 10 * weight + 6.25 * height - 5 * age + 5 : 10 * weight + 6.25 * height - 5 * age - 161;
+    tdee = Math.round(bmr * Number(activity));
+  }
+  return /*#__PURE__*/React.createElement("div", {
+    className: "ra-card",
+    style: {
+      borderTopColor: "#4EC1A6"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ra-card-h"
+  }, /*#__PURE__*/React.createElement(Heart, {
+    size: 16,
+    color: "#4EC1A6"
+  }), " Daily calorie target"), /*#__PURE__*/React.createElement("div", {
+    className: "ra-formgrid"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "ra-field"
+  }, /*#__PURE__*/React.createElement("span", null, "Age"), /*#__PURE__*/React.createElement("input", {
+    className: "ra-input sm",
+    type: "number",
+    value: age || "",
+    onChange: e => set("age", +e.target.value)
+  })), /*#__PURE__*/React.createElement("label", {
+    className: "ra-field"
+  }, /*#__PURE__*/React.createElement("span", null, "Height (cm)"), /*#__PURE__*/React.createElement("input", {
+    className: "ra-input sm",
+    type: "number",
+    value: height || "",
+    onChange: e => set("height", +e.target.value)
+  })), /*#__PURE__*/React.createElement("label", {
+    className: "ra-field"
+  }, /*#__PURE__*/React.createElement("span", null, "Weight (kg)"), /*#__PURE__*/React.createElement("input", {
+    className: "ra-input sm",
+    type: "number",
+    value: weight || "",
+    onChange: e => set("weight", +e.target.value)
+  })), /*#__PURE__*/React.createElement("label", {
+    className: "ra-field"
+  }, /*#__PURE__*/React.createElement("span", null, "Sex"), /*#__PURE__*/React.createElement("select", {
+    className: "ra-input sm",
+    value: sex,
+    onChange: e => set("sex", e.target.value)
+  }, /*#__PURE__*/React.createElement("option", {
+    value: "m"
+  }, "Male"), /*#__PURE__*/React.createElement("option", {
+    value: "f"
+  }, "Female")))), /*#__PURE__*/React.createElement("div", {
+    className: "ra-fieldlabel"
+  }, "Activity"), /*#__PURE__*/React.createElement("select", {
+    className: "ra-input sm",
+    value: activity,
+    onChange: e => set("activity", e.target.value)
+  }, /*#__PURE__*/React.createElement("option", {
+    value: 1.2
+  }, "Sedentary"), /*#__PURE__*/React.createElement("option", {
+    value: 1.375
+  }, "Light (1–3×/wk)"), /*#__PURE__*/React.createElement("option", {
+    value: 1.55
+  }, "Moderate (3–5×/wk)"), /*#__PURE__*/React.createElement("option", {
+    value: 1.725
+  }, "Active (6–7×/wk)")), tdee ? /*#__PURE__*/React.createElement("div", {
+    className: "ra-tdee"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "mono ra-tdee-num"
+  }, tdee), /*#__PURE__*/React.createElement("span", {
+    className: "ra-dim ra-small"
+  }, "kcal / day to maintain · aim balanced, not extreme")) : /*#__PURE__*/React.createElement("p", {
+    className: "ra-dim ra-small"
+  }, "Fill the fields for your maintenance estimate."), weight ? /*#__PURE__*/React.createElement("div", {
+    className: "ra-tdee",
+    style: {
+      marginTop: 8
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "mono ra-tdee-num",
+    style: {
+      fontSize: 20
+    }
+  }, Math.round(weight * (state.food?.profile?.proteinPerKg || 1.6)), "g"), /*#__PURE__*/React.createElement("span", {
+    className: "ra-dim ra-small"
+  }, "protein / day target (~", state.food?.profile?.proteinPerKg || 1.6, "g per kg, for strength)")) : null, /*#__PURE__*/React.createElement("div", {
+    className: "ra-fieldlabel"
+  }, "Weigh-in reminder"), /*#__PURE__*/React.createElement("select", {
+    className: "ra-input sm",
+    value: pr.weighCadence || "weekly",
+    onChange: e => set("weighCadence", e.target.value)
+  }, /*#__PURE__*/React.createElement("option", {
+    value: "weekly"
+  }, "Weekly"), /*#__PURE__*/React.createElement("option", {
+    value: "biweekly"
+  }, "Every 2 weeks")), (pr.weightLog || []).length > 1 && /*#__PURE__*/React.createElement("div", {
+    className: "ra-weighhist"
+  }, [...pr.weightLog].slice(-5).reverse().map((w, i) => /*#__PURE__*/React.createElement("div", {
+    key: i,
+    className: "ra-weighrow"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "ra-dim ra-small"
+  }, w.date), /*#__PURE__*/React.createElement("span", {
+    className: "mono ra-small"
+  }, w.kg, " kg")))));
 }
-
 async function estimateKcal(desc) {
   const t = await callClaude(`Estimate the calories in this food or meal: "${desc}". Assume a typical single serving if no amount is given. Reply with ONLY an integer number of kcal — no words, no units.`);
   const n = parseInt((String(t).match(/\d+/) || [])[0], 10);
   return Number.isFinite(n) ? n : 0;
 }
-
 async function regenMeal(fp, meal, others, dName) {
   const focus = (fp.focus || []).join(", ") || "balanced";
   const prompt = `Suggest ONE replacement for the "${meal.slot}" meal (around ${meal.time}) for ${dName}.
@@ -907,28 +1917,26 @@ Favour no-cook / minimal-prep, cheap, high-protein where it fits.
 Return ONLY valid JSON, no prose, no fences: {"name":"short meal","kcal":450,"protein":30,"note":"quick prep note"}`;
   let txt = await callClaude(prompt);
   txt = txt.replace(/```json|```/g, "").trim();
-  const s = txt.indexOf("{"), e = txt.lastIndexOf("}");
+  const s = txt.indexOf("{"),
+    e = txt.lastIndexOf("}");
   if (s >= 0 && e >= 0) txt = txt.slice(s, e + 1);
   return JSON.parse(txt);
 }
-
 async function generateBookRecs(reading) {
-  const have = (reading || []).map((b) => b.title + (b.author ? ` by ${b.author}` : "")).join("; ");
-  const basis = have
-    ? `Based on what this person has read or is reading: ${have}. Recommend 4 books they'd likely enjoy next — build on the themes, authors, or genres, and do NOT repeat any book they already listed.`
-    : `Recommend 4 varied, well-regarded books as a strong starting reading list across a few genres.`;
+  const have = (reading || []).map(b => b.title + (b.author ? ` by ${b.author}` : "")).join("; ");
+  const basis = have ? `Based on what this person has read or is reading: ${have}. Recommend 4 books they'd likely enjoy next — build on the themes, authors, or genres, and do NOT repeat any book they already listed.` : `Recommend 4 varied, well-regarded books as a strong starting reading list across a few genres.`;
   const prompt = `${basis} Use only real, existing books. Return ONLY a JSON array, no prose, no markdown fences: [{"title":"book title","author":"author","why":"one short line on why it fits them"}]`;
   let txt = await callClaude(prompt);
   txt = txt.replace(/```json|```/g, "").trim();
-  const s = txt.indexOf("["), e = txt.lastIndexOf("]");
+  const s = txt.indexOf("["),
+    e = txt.lastIndexOf("]");
   if (s >= 0 && e >= 0) txt = txt.slice(s, e + 1);
   const arr = JSON.parse(txt);
   return Array.isArray(arr) ? arr.slice(0, 4) : [];
 }
-
 async function generateMeals(fp, target, protein, dName) {
   const focus = (fp.focus || []).join(", ") || "balanced";
-  const slots = (fp.mealTimes || []).map((m) => `${m.slot} at ${m.time}`).join(", ");
+  const slots = (fp.mealTimes || []).map(m => `${m.slot} at ${m.time}`).join(", ");
   const prompt = `Plan a full day of eating for one person for ${dName}, split across these fixed meal slots: ${slots}.
 Diet: ${fp.diet}. Cooking willingness: ${fp.cooking}. Preferences: ${focus}.${fp.avoid ? ` Avoid: ${fp.avoid}.` : ""}
 ${target ? `Total for the day: about ${target} kcal, sensibly distributed across the slots (lighter snack, larger main meals).` : ""}
@@ -938,34 +1946,50 @@ Return ONLY valid JSON, no prose, no fences — one object per slot in the SAME 
 {"meals":[{"slot":"Breakfast","time":"08:00","name":"short meal","kcal":450,"protein":30,"note":"quick prep note"}]}`;
   let txt = await callClaude(prompt);
   txt = txt.replace(/```json|```/g, "").trim();
-  const s = txt.indexOf("{"), e = txt.lastIndexOf("}");
+  const s = txt.indexOf("{"),
+    e = txt.lastIndexOf("}");
   if (s >= 0 && e >= 0) txt = txt.slice(s, e + 1);
   const obj = JSON.parse(txt);
   return obj.meals || [];
 }
-
-function Food({ state, update }) {
+function Food({
+  state,
+  update
+}) {
   const target = tdeeOf(state.profile);
   const protein = proteinTargetOf(state.profile, state.food.profile);
-  return (
-    <div className="ra-view">
-      <div className="ra-pagehead">
-        <div><p className="ra-eyebrow">Food</p><h1 className="ra-h1">Eat well, simply</h1></div>
-        {(target || protein) && (
-          <div className="ra-targetchips">
-            {target ? <span className="ra-tchip">{target}<i>kcal</i></span> : null}
-            {protein ? <span className="ra-tchip">{protein}<i>g P</i></span> : null}
-          </div>
-        )}
-      </div>
-      <WeighInCard state={state} update={update} />
-      <MealPlan state={state} update={update} target={target} />
-      <FoodLog state={state} update={update} target={target} />
-    </div>
-  );
+  return /*#__PURE__*/React.createElement("div", {
+    className: "ra-view"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ra-pagehead"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
+    className: "ra-eyebrow"
+  }, "Food"), /*#__PURE__*/React.createElement("h1", {
+    className: "ra-h1"
+  }, "Eat well, simply")), (target || protein) && /*#__PURE__*/React.createElement("div", {
+    className: "ra-targetchips"
+  }, target ? /*#__PURE__*/React.createElement("span", {
+    className: "ra-tchip"
+  }, target, /*#__PURE__*/React.createElement("i", null, "kcal")) : null, protein ? /*#__PURE__*/React.createElement("span", {
+    className: "ra-tchip"
+  }, protein, /*#__PURE__*/React.createElement("i", null, "g P")) : null)), /*#__PURE__*/React.createElement(WeighInCard, {
+    state: state,
+    update: update
+  }), /*#__PURE__*/React.createElement(MealPlan, {
+    state: state,
+    update: update,
+    target: target
+  }), /*#__PURE__*/React.createElement(FoodLog, {
+    state: state,
+    update: update,
+    target: target
+  }));
 }
-
-function FoodLog({ state, update, target }) {
+function FoodLog({
+  state,
+  update,
+  target
+}) {
   const t = todayISO();
   const log = state.food.log[t] || [];
   const total = log.reduce((a, m) => a + (Number(m.kcal) || 0), 0);
@@ -975,65 +1999,206 @@ function FoodLog({ state, update, target }) {
   const add = async () => {
     if (!name.trim()) return;
     let k = Number(kcal) || 0;
-    if (!kcal) { setEstimating(true); try { k = await estimateKcal(name.trim()); } catch {} setEstimating(false); }
-    update((s) => { s.food.log[t] = s.food.log[t] || []; s.food.log[t].push({ id: uid(), name: name.trim(), kcal: k, slot: "" }); });
-    setName(""); setKcal("");
+    if (!kcal) {
+      setEstimating(true);
+      try {
+        k = await estimateKcal(name.trim());
+      } catch {}
+      setEstimating(false);
+    }
+    update(s => {
+      s.food.log[t] = s.food.log[t] || [];
+      s.food.log[t].push({
+        id: uid(),
+        name: name.trim(),
+        kcal: k,
+        slot: ""
+      });
+    });
+    setName("");
+    setKcal("");
   };
-  const estimate = async () => { if (!name.trim()) return; setEstimating(true); try { const k = await estimateKcal(name.trim()); setKcal(String(k)); } catch {} finally { setEstimating(false); } };
-  const remove = (id) => update((s) => { if (s.food.log[t]) s.food.log[t] = s.food.log[t].filter((x) => x.id !== id); });
+  const estimate = async () => {
+    if (!name.trim()) return;
+    setEstimating(true);
+    try {
+      const k = await estimateKcal(name.trim());
+      setKcal(String(k));
+    } catch {} finally {
+      setEstimating(false);
+    }
+  };
+  const remove = id => update(s => {
+    if (s.food.log[t]) s.food.log[t] = s.food.log[t].filter(x => x.id !== id);
+  });
   let read = null;
-  if (target && total > 0) { const r = total / target; read = r < 0.8 ? { t: "light so far", c: "#5EA8E8" } : r <= 1.12 ? { t: "on track", c: "#4EC1A6" } : { t: "over maintenance", c: "#E8B04B" }; }
-  return (
-    <div className="ra-card" style={{ borderTopColor: "#4EC1A6" }}>
-      <div className="ra-card-h"><Check size={16} color="#4EC1A6" /> Today's food</div>
-      <div className="ra-foodtotal"><span className="mono ra-tdee-num">{total}</span><span className="ra-dim ra-small">{target ? `of ~${target} kcal` : "kcal logged"}{read ? " · " : ""}{read && <b style={{ color: read.c }}>{read.t}</b>}</span></div>
-      {target > 0 && <div className="ra-bar" style={{ marginBottom: 11 }}><div className="ra-fill" style={{ width: Math.min(100, (total / target) * 100) + "%", background: read ? read.c : "#4EC1A6" }} /></div>}
-      {log.map((m) => (<div key={m.id} className="ra-book"><span>{m.slot ? `${m.slot}: ` : ""}{m.name}</span><span className="mono ra-dim ra-small">{m.kcal}</span><button className="ra-ghost sm" onClick={() => remove(m.id)}><Trash2 size={13} /></button></div>))}
-      <div className="ra-inputrow" style={{ marginTop: 8 }}>
-        <input className="ra-input sm" placeholder="Log something you ate" value={name} onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && add()} />
-        <input className="ra-input tiny" style={{ width: 70 }} type="number" placeholder="kcal" value={kcal} onChange={(e) => setKcal(e.target.value)} onKeyDown={(e) => e.key === "Enter" && add()} />
-        <button className="ra-suggest" onClick={estimate} disabled={estimating || !name.trim()} title="Estimate calories" style={{ color: "#4EC1A6", borderColor: "#4EC1A6" }}>{estimating ? <Loader2 size={15} className="spin" /> : <Sparkles size={15} />}</button>
-        <button className="ra-suggest" onClick={add} disabled={estimating}><Plus size={15} /></button>
-      </div>
-      <p className="ra-dim ra-small">Leave kcal blank and it's estimated for you — an approximation, not a lab value.</p>
-    </div>
-  );
+  if (target && total > 0) {
+    const r = total / target;
+    read = r < 0.8 ? {
+      t: "light so far",
+      c: "#5EA8E8"
+    } : r <= 1.12 ? {
+      t: "on track",
+      c: "#4EC1A6"
+    } : {
+      t: "over maintenance",
+      c: "#E8B04B"
+    };
+  }
+  return /*#__PURE__*/React.createElement("div", {
+    className: "ra-card",
+    style: {
+      borderTopColor: "#4EC1A6"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ra-card-h"
+  }, /*#__PURE__*/React.createElement(Check, {
+    size: 16,
+    color: "#4EC1A6"
+  }), " Today's food"), /*#__PURE__*/React.createElement("div", {
+    className: "ra-foodtotal"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "mono ra-tdee-num"
+  }, total), /*#__PURE__*/React.createElement("span", {
+    className: "ra-dim ra-small"
+  }, target ? `of ~${target} kcal` : "kcal logged", read ? " · " : "", read && /*#__PURE__*/React.createElement("b", {
+    style: {
+      color: read.c
+    }
+  }, read.t))), target > 0 && /*#__PURE__*/React.createElement("div", {
+    className: "ra-bar",
+    style: {
+      marginBottom: 11
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ra-fill",
+    style: {
+      width: Math.min(100, total / target * 100) + "%",
+      background: read ? read.c : "#4EC1A6"
+    }
+  })), log.map(m => /*#__PURE__*/React.createElement("div", {
+    key: m.id,
+    className: "ra-book"
+  }, /*#__PURE__*/React.createElement("span", null, m.slot ? `${m.slot}: ` : "", m.name), /*#__PURE__*/React.createElement("span", {
+    className: "mono ra-dim ra-small"
+  }, m.kcal), /*#__PURE__*/React.createElement("button", {
+    className: "ra-ghost sm",
+    onClick: () => remove(m.id)
+  }, /*#__PURE__*/React.createElement(Trash2, {
+    size: 13
+  })))), /*#__PURE__*/React.createElement("div", {
+    className: "ra-inputrow",
+    style: {
+      marginTop: 8
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    className: "ra-input sm",
+    placeholder: "Log something you ate",
+    value: name,
+    onChange: e => setName(e.target.value),
+    onKeyDown: e => e.key === "Enter" && add()
+  }), /*#__PURE__*/React.createElement("input", {
+    className: "ra-input tiny",
+    style: {
+      width: 70
+    },
+    type: "number",
+    placeholder: "kcal",
+    value: kcal,
+    onChange: e => setKcal(e.target.value),
+    onKeyDown: e => e.key === "Enter" && add()
+  }), /*#__PURE__*/React.createElement("button", {
+    className: "ra-suggest",
+    onClick: estimate,
+    disabled: estimating || !name.trim(),
+    title: "Estimate calories",
+    style: {
+      color: "#4EC1A6",
+      borderColor: "#4EC1A6"
+    }
+  }, estimating ? /*#__PURE__*/React.createElement(Loader2, {
+    size: 15,
+    className: "spin"
+  }) : /*#__PURE__*/React.createElement(Sparkles, {
+    size: 15
+  })), /*#__PURE__*/React.createElement("button", {
+    className: "ra-suggest",
+    onClick: add,
+    disabled: estimating
+  }, /*#__PURE__*/React.createElement(Plus, {
+    size: 15
+  }))), /*#__PURE__*/React.createElement("p", {
+    className: "ra-dim ra-small"
+  }, "Leave kcal blank and it's estimated for you — an approximation, not a lab value."));
 }
-
-function WeighInCard({ state, update }) {
+function WeighInCard({
+  state,
+  update
+}) {
   const info = weighInfo(state.profile);
   const [kg, setKg] = useState("");
-  const log = (state.profile.weightLog || []);
+  const log = state.profile.weightLog || [];
   const save = () => {
-    const v = parseFloat(kg); if (!v) return;
-    update((s) => {
-      s.profile.weightLog = [...(s.profile.weightLog || []).filter((w) => w.date !== todayISO()), { date: todayISO(), kg: v }];
+    const v = parseFloat(kg);
+    if (!v) return;
+    update(s => {
+      s.profile.weightLog = [...(s.profile.weightLog || []).filter(w => w.date !== todayISO()), {
+        date: todayISO(),
+        kg: v
+      }];
       s.profile.weight = v; // current weight drives kcal + protein targets, which drive meals + workouts
     });
     setKg("");
   };
   if (!info.due && info.last) {
-    return (
-      <div className="ra-weigh done">
-        <Scale size={16} color="#4EC1A6" />
-        <span className="ra-small">Last weigh-in <b>{info.last.kg} kg</b>{info.delta !== null ? <em className="ra-author"> · {info.delta > 0 ? "+" : ""}{info.delta} kg</em> : ""}</span>
-        <span className="ra-dim ra-small ra-weigh-next">next in {info.cadence - daysBetween(info.last.date, todayISO())}d</span>
-      </div>
-    );
+    return /*#__PURE__*/React.createElement("div", {
+      className: "ra-weigh done"
+    }, /*#__PURE__*/React.createElement(Scale, {
+      size: 16,
+      color: "#4EC1A6"
+    }), /*#__PURE__*/React.createElement("span", {
+      className: "ra-small"
+    }, "Last weigh-in ", /*#__PURE__*/React.createElement("b", null, info.last.kg, " kg"), info.delta !== null ? /*#__PURE__*/React.createElement("em", {
+      className: "ra-author"
+    }, " · ", info.delta > 0 ? "+" : "", info.delta, " kg") : ""), /*#__PURE__*/React.createElement("span", {
+      className: "ra-dim ra-small ra-weigh-next"
+    }, "next in ", info.cadence - daysBetween(info.last.date, todayISO()), "d"));
   }
-  return (
-    <div className="ra-weigh due">
-      <div className="ra-weigh-head"><Scale size={16} color="#E8B04B" /><span className="ra-small"><b>Time to weigh in</b> — {info.last ? `${daysBetween(info.last.date, todayISO())} days since last` : "no weigh-in yet"}</span></div>
-      <div className="ra-inputrow">
-        <input className="ra-input sm" type="number" step="0.1" placeholder="Weight (kg)" value={kg} onChange={(e) => setKg(e.target.value)} onKeyDown={(e) => e.key === "Enter" && save()} />
-        <button className="ra-primary sm" style={{ background: "#4EC1A6" }} onClick={save} disabled={!kg}>Log</button>
-      </div>
-      <p className="ra-dim ra-small">Updates your calorie & protein targets automatically — meals and workouts adjust with it. {log.length ? `${log.length} weigh-ins logged.` : ""}</p>
-    </div>
-  );
+  return /*#__PURE__*/React.createElement("div", {
+    className: "ra-weigh due"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ra-weigh-head"
+  }, /*#__PURE__*/React.createElement(Scale, {
+    size: 16,
+    color: "#E8B04B"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "ra-small"
+  }, /*#__PURE__*/React.createElement("b", null, "Time to weigh in"), " — ", info.last ? `${daysBetween(info.last.date, todayISO())} days since last` : "no weigh-in yet")), /*#__PURE__*/React.createElement("div", {
+    className: "ra-inputrow"
+  }, /*#__PURE__*/React.createElement("input", {
+    className: "ra-input sm",
+    type: "number",
+    step: "0.1",
+    placeholder: "Weight (kg)",
+    value: kg,
+    onChange: e => setKg(e.target.value),
+    onKeyDown: e => e.key === "Enter" && save()
+  }), /*#__PURE__*/React.createElement("button", {
+    className: "ra-primary sm",
+    style: {
+      background: "#4EC1A6"
+    },
+    onClick: save,
+    disabled: !kg
+  }, "Log")), /*#__PURE__*/React.createElement("p", {
+    className: "ra-dim ra-small"
+  }, "Updates your calorie & protein targets automatically — meals and workouts adjust with it. ", log.length ? `${log.length} weigh-ins logged.` : ""));
 }
-
-function MealPlan({ state, update, target }) {
+function MealPlan({
+  state,
+  update,
+  target
+}) {
   const t = todayISO();
   const protein = proteinTargetOf(state.profile, state.food.profile);
   const plan = state.food.plan[t];
@@ -1041,101 +2206,294 @@ function MealPlan({ state, update, target }) {
   const [err, setErr] = useState("");
   const [regenId, setRegenId] = useState(null);
   const gen = async () => {
-    setErr(""); setLoading(true);
+    setErr("");
+    setLoading(true);
     try {
       const meals = await generateMeals(state.food.profile, target, protein, dayName(t));
-      update((s) => { s.food.plan[t] = { meals: meals.map((m) => ({ id: uid(), slot: m.slot, time: m.time, name: m.name, kcal: Number(m.kcal) || 0, protein: Number(m.protein) || 0, note: m.note || "", loggedId: null })) }; });
-    } catch { setErr("Couldn't build the plan just now — try again."); }
-    finally { setLoading(false); }
+      update(s => {
+        s.food.plan[t] = {
+          meals: meals.map(m => ({
+            id: uid(),
+            slot: m.slot,
+            time: m.time,
+            name: m.name,
+            kcal: Number(m.kcal) || 0,
+            protein: Number(m.protein) || 0,
+            note: m.note || "",
+            loggedId: null
+          }))
+        };
+      });
+    } catch {
+      setErr("Couldn't build the plan just now — try again.");
+    } finally {
+      setLoading(false);
+    }
   };
-  const regenOne = async (m) => {
+  const regenOne = async m => {
     setRegenId(m.id);
     try {
-      const others = plan.meals.filter((x) => x.id !== m.id).map((x) => x.name);
+      const others = plan.meals.filter(x => x.id !== m.id).map(x => x.name);
       const nm = await regenMeal(state.food.profile, m, others, dayName(t));
-      update((s) => { const meal = s.food.plan[t].meals.find((x) => x.id === m.id); if (meal) { meal.name = nm.name || meal.name; meal.kcal = Number(nm.kcal) || meal.kcal; meal.protein = Number(nm.protein) || meal.protein; meal.note = nm.note || ""; } });
-    } catch {} finally { setRegenId(null); }
+      update(s => {
+        const meal = s.food.plan[t].meals.find(x => x.id === m.id);
+        if (meal) {
+          meal.name = nm.name || meal.name;
+          meal.kcal = Number(nm.kcal) || meal.kcal;
+          meal.protein = Number(nm.protein) || meal.protein;
+          meal.note = nm.note || "";
+        }
+      });
+    } catch {} finally {
+      setRegenId(null);
+    }
   };
-  const toggleEaten = (id) => update((s) => {
-    const meal = s.food.plan[t].meals.find((x) => x.id === id); if (!meal) return;
-    if (meal.loggedId) { s.food.log[t] = (s.food.log[t] || []).filter((x) => x.id !== meal.loggedId); meal.loggedId = null; }
-    else { const lid = uid(); s.food.log[t] = s.food.log[t] || []; s.food.log[t].push({ id: lid, name: meal.name, kcal: meal.kcal || 0, slot: meal.slot }); meal.loggedId = lid; }
+  const toggleEaten = id => update(s => {
+    const meal = s.food.plan[t].meals.find(x => x.id === id);
+    if (!meal) return;
+    if (meal.loggedId) {
+      s.food.log[t] = (s.food.log[t] || []).filter(x => x.id !== meal.loggedId);
+      meal.loggedId = null;
+    } else {
+      const lid = uid();
+      s.food.log[t] = s.food.log[t] || [];
+      s.food.log[t].push({
+        id: lid,
+        name: meal.name,
+        kcal: meal.kcal || 0,
+        slot: meal.slot
+      });
+      meal.loggedId = lid;
+    }
   });
   const now = nowHM();
-  return (
-    <div className="ra-card" style={{ borderTopColor: "#4EC1A6" }}>
-      <div className="ra-card-h"><Clock size={16} color="#4EC1A6" /> Today's meal plan</div>
-      <button className="ra-wo-gen" onClick={gen} disabled={loading}>{loading ? <Loader2 size={16} className="spin" /> : <Utensils size={16} />}{loading ? "Planning your meals…" : plan ? "Regenerate plan" : "Plan my meals"}</button>
-      <p className="ra-dim ra-small">Fixed meal times{target ? ` · ~${target} kcal` : ""}{protein ? ` · ~${protein}g protein` : ""}. Edit the times below.</p>
-      {err && <p className="ra-warn ra-small">{err}</p>}
-      {plan && (
-        <div className="ra-meals">
-          {plan.meals.map((m) => {
-            const eaten = !!m.loggedId;
-            const overdue = !eaten && m.time && m.time < now;
-            return (
-              <div key={m.id} className={"ra-mealslot" + (eaten ? " eaten" : overdue ? " due" : "")}>
-                <button className="ra-mealcheck" onClick={() => toggleEaten(m.id)} style={{ background: eaten ? "#4EC1A6" : "transparent", borderColor: "#4EC1A6" }}>{eaten && <Check size={13} color="#16182B" strokeWidth={3} />}</button>
-                <div className="ra-mealslot-body">
-                  <div className="ra-mealslot-top"><span className="mono ra-mealtime">{m.time}</span><span className="ra-meal-slot">{m.slot}</span>{overdue && <span className="ra-duetag">due</span>}</div>
-                  <span className={"ra-meal-name" + (eaten ? " struck" : "")}>{m.name}</span>
-                  {m.note && <span className="ra-dim ra-small">{m.note}</span>}
-                </div>
-                <div className="ra-meal-r"><span className="mono ra-dim ra-small">{m.kcal} kcal</span>{m.protein ? <span className="mono ra-dim ra-small">{m.protein}g P</span> : null}{!eaten && <button className="ra-regen" onClick={() => regenOne(m)} disabled={regenId === m.id} title="Regenerate just this meal">{regenId === m.id ? <Loader2 size={13} className="spin" /> : <RefreshCw size={13} />}</button>}</div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
+  return /*#__PURE__*/React.createElement("div", {
+    className: "ra-card",
+    style: {
+      borderTopColor: "#4EC1A6"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ra-card-h"
+  }, /*#__PURE__*/React.createElement(Clock, {
+    size: 16,
+    color: "#4EC1A6"
+  }), " Today's meal plan"), /*#__PURE__*/React.createElement("button", {
+    className: "ra-wo-gen",
+    onClick: gen,
+    disabled: loading
+  }, loading ? /*#__PURE__*/React.createElement(Loader2, {
+    size: 16,
+    className: "spin"
+  }) : /*#__PURE__*/React.createElement(Utensils, {
+    size: 16
+  }), loading ? "Planning your meals…" : plan ? "Regenerate plan" : "Plan my meals"), /*#__PURE__*/React.createElement("p", {
+    className: "ra-dim ra-small"
+  }, "Fixed meal times", target ? ` · ~${target} kcal` : "", protein ? ` · ~${protein}g protein` : "", ". Edit the times below."), err && /*#__PURE__*/React.createElement("p", {
+    className: "ra-warn ra-small"
+  }, err), plan && /*#__PURE__*/React.createElement("div", {
+    className: "ra-meals"
+  }, plan.meals.map(m => {
+    const eaten = !!m.loggedId;
+    const overdue = !eaten && m.time && m.time < now;
+    return /*#__PURE__*/React.createElement("div", {
+      key: m.id,
+      className: "ra-mealslot" + (eaten ? " eaten" : overdue ? " due" : "")
+    }, /*#__PURE__*/React.createElement("button", {
+      className: "ra-mealcheck",
+      onClick: () => toggleEaten(m.id),
+      style: {
+        background: eaten ? "#4EC1A6" : "transparent",
+        borderColor: "#4EC1A6"
+      }
+    }, eaten && /*#__PURE__*/React.createElement(Check, {
+      size: 13,
+      color: "#16182B",
+      strokeWidth: 3
+    })), /*#__PURE__*/React.createElement("div", {
+      className: "ra-mealslot-body"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "ra-mealslot-top"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "mono ra-mealtime"
+    }, m.time), /*#__PURE__*/React.createElement("span", {
+      className: "ra-meal-slot"
+    }, m.slot), overdue && /*#__PURE__*/React.createElement("span", {
+      className: "ra-duetag"
+    }, "due")), /*#__PURE__*/React.createElement("span", {
+      className: "ra-meal-name" + (eaten ? " struck" : "")
+    }, m.name), m.note && /*#__PURE__*/React.createElement("span", {
+      className: "ra-dim ra-small"
+    }, m.note)), /*#__PURE__*/React.createElement("div", {
+      className: "ra-meal-r"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "mono ra-dim ra-small"
+    }, m.kcal, " kcal"), m.protein ? /*#__PURE__*/React.createElement("span", {
+      className: "mono ra-dim ra-small"
+    }, m.protein, "g P") : null, !eaten && /*#__PURE__*/React.createElement("button", {
+      className: "ra-regen",
+      onClick: () => regenOne(m),
+      disabled: regenId === m.id,
+      title: "Regenerate just this meal"
+    }, regenId === m.id ? /*#__PURE__*/React.createElement(Loader2, {
+      size: 13,
+      className: "spin"
+    }) : /*#__PURE__*/React.createElement(RefreshCw, {
+      size: 13
+    }))));
+  })));
 }
-
-function FoodProfileCard({ state, update }) {
+function FoodProfileCard({
+  state,
+  update
+}) {
   const fp = state.food.profile;
   const DIETS = ["No restrictions", "Vegetarian", "Vegan", "Pescatarian"];
   const COOK = ["Barely — mostly no-cook", "Quick & minimal", "Depends on the day", "Proper cooking is fine"];
   const FOCUS = ["High-protein (for strength)", "Balanced & varied", "Cheap & simple", "Light & fresh"];
-  const setP = (patch) => update((s) => { s.food.profile = { ...s.food.profile, ...patch }; });
-  const toggle = (arr, v) => (arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
-  return (
-    <div className="ra-card" style={{ borderTopColor: "#4EC1A6" }}>
-      <div className="ra-card-h"><Utensils size={16} color="#4EC1A6" /> Food preferences</div>
-      <div className="ra-fieldlabel">Diet</div>
-      <select className="ra-input sm" value={fp.diet} onChange={(e) => setP({ diet: e.target.value })}>{DIETS.map((d) => <option key={d}>{d}</option>)}</select>
-      <div className="ra-fieldlabel">Cooking</div>
-      <select className="ra-input sm" value={fp.cooking} onChange={(e) => setP({ cooking: e.target.value })}>{COOK.map((d) => <option key={d}>{d}</option>)}</select>
-      <div className="ra-fieldlabel">Focus</div>
-      <div className="ra-chipwrap">{FOCUS.map((g) => (<button key={g} className={"ra-mini" + ((fp.focus || []).includes(g) ? " on" : "")} onClick={() => setP({ focus: toggle(fp.focus || [], g) })}>{g}</button>))}</div>
-      <div className="ra-fieldlabel">Avoid (allergies, dislikes)</div>
-      <input className="ra-input sm" placeholder="e.g. mushrooms, shellfish" value={fp.avoid || ""} onChange={(e) => setP({ avoid: e.target.value })} />
-      <div className="ra-fieldlabel">Meal times (your fixed eating schedule)</div>
-      <div className="ra-mealtimes">
-        {[...(fp.mealTimes || [])].sort((a, b) => (a.time || "").localeCompare(b.time || "")).map((mt) => {
-          const i = (fp.mealTimes || []).indexOf(mt);
-          return (
-            <div key={i} className="ra-mealtime">
-              <input className="ra-input sm" value={mt.slot} onChange={(e) => { const arr = [...fp.mealTimes]; arr[i] = { ...arr[i], slot: e.target.value }; setP({ mealTimes: arr }); }} />
-              <input className="ra-input tiny" type="time" value={mt.time} onChange={(e) => { const arr = [...fp.mealTimes]; arr[i] = { ...arr[i], time: e.target.value }; arr.sort((a, b) => (a.time || "").localeCompare(b.time || "")); setP({ mealTimes: arr }); }} />
-              <button className="ra-ghost sm" onClick={() => setP({ mealTimes: fp.mealTimes.filter((_, j) => j !== i) })}><Trash2 size={14} /></button>
-            </div>
-          );
-        })}
-        <button className="ra-import-toggle" onClick={() => { const arr = [...(fp.mealTimes || []), { slot: "Meal", time: "10:00" }]; arr.sort((a, b) => (a.time || "").localeCompare(b.time || "")); setP({ mealTimes: arr }); }}>+ add a meal slot</button>
-      </div>
-    </div>
-  );
+  const setP = patch => update(s => {
+    s.food.profile = {
+      ...s.food.profile,
+      ...patch
+    };
+  });
+  const toggle = (arr, v) => arr.includes(v) ? arr.filter(x => x !== v) : [...arr, v];
+  return /*#__PURE__*/React.createElement("div", {
+    className: "ra-card",
+    style: {
+      borderTopColor: "#4EC1A6"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ra-card-h"
+  }, /*#__PURE__*/React.createElement(Utensils, {
+    size: 16,
+    color: "#4EC1A6"
+  }), " Food preferences"), /*#__PURE__*/React.createElement("div", {
+    className: "ra-fieldlabel"
+  }, "Diet"), /*#__PURE__*/React.createElement("select", {
+    className: "ra-input sm",
+    value: fp.diet,
+    onChange: e => setP({
+      diet: e.target.value
+    })
+  }, DIETS.map(d => /*#__PURE__*/React.createElement("option", {
+    key: d
+  }, d))), /*#__PURE__*/React.createElement("div", {
+    className: "ra-fieldlabel"
+  }, "Cooking"), /*#__PURE__*/React.createElement("select", {
+    className: "ra-input sm",
+    value: fp.cooking,
+    onChange: e => setP({
+      cooking: e.target.value
+    })
+  }, COOK.map(d => /*#__PURE__*/React.createElement("option", {
+    key: d
+  }, d))), /*#__PURE__*/React.createElement("div", {
+    className: "ra-fieldlabel"
+  }, "Focus"), /*#__PURE__*/React.createElement("div", {
+    className: "ra-chipwrap"
+  }, FOCUS.map(g => /*#__PURE__*/React.createElement("button", {
+    key: g,
+    className: "ra-mini" + ((fp.focus || []).includes(g) ? " on" : ""),
+    onClick: () => setP({
+      focus: toggle(fp.focus || [], g)
+    })
+  }, g))), /*#__PURE__*/React.createElement("div", {
+    className: "ra-fieldlabel"
+  }, "Avoid (allergies, dislikes)"), /*#__PURE__*/React.createElement("input", {
+    className: "ra-input sm",
+    placeholder: "e.g. mushrooms, shellfish",
+    value: fp.avoid || "",
+    onChange: e => setP({
+      avoid: e.target.value
+    })
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "ra-fieldlabel"
+  }, "Meal times (your fixed eating schedule)"), /*#__PURE__*/React.createElement("div", {
+    className: "ra-mealtimes"
+  }, [...(fp.mealTimes || [])].sort((a, b) => (a.time || "").localeCompare(b.time || "")).map(mt => {
+    const i = (fp.mealTimes || []).indexOf(mt);
+    return /*#__PURE__*/React.createElement("div", {
+      key: i,
+      className: "ra-mealtime"
+    }, /*#__PURE__*/React.createElement("input", {
+      className: "ra-input sm",
+      value: mt.slot,
+      onChange: e => {
+        const arr = [...fp.mealTimes];
+        arr[i] = {
+          ...arr[i],
+          slot: e.target.value
+        };
+        setP({
+          mealTimes: arr
+        });
+      }
+    }), /*#__PURE__*/React.createElement("input", {
+      className: "ra-input tiny",
+      type: "time",
+      value: mt.time,
+      onChange: e => {
+        const arr = [...fp.mealTimes];
+        arr[i] = {
+          ...arr[i],
+          time: e.target.value
+        };
+        arr.sort((a, b) => (a.time || "").localeCompare(b.time || ""));
+        setP({
+          mealTimes: arr
+        });
+      }
+    }), /*#__PURE__*/React.createElement("button", {
+      className: "ra-ghost sm",
+      onClick: () => setP({
+        mealTimes: fp.mealTimes.filter((_, j) => j !== i)
+      })
+    }, /*#__PURE__*/React.createElement(Trash2, {
+      size: 14
+    })));
+  }), /*#__PURE__*/React.createElement("button", {
+    className: "ra-import-toggle",
+    onClick: () => {
+      const arr = [...(fp.mealTimes || []), {
+        slot: "Meal",
+        time: "10:00"
+      }];
+      arr.sort((a, b) => (a.time || "").localeCompare(b.time || ""));
+      setP({
+        mealTimes: arr
+      });
+    }
+  }, "+ add a meal slot")));
 }
-
-function ReadingCard({ state, update }) {
+function ReadingCard({
+  state,
+  update
+}) {
   const [draft, setDraft] = useState("");
   const [draftAuthor, setDraftAuthor] = useState("");
   const [importing, setImporting] = useState(false);
   const [bulk, setBulk] = useState("");
   const reading = state.reading || [];
-  const add = () => { if (!draft.trim()) return; update((s) => { s.reading = [...(s.reading || []), { id: uid(), title: draft.trim(), author: draftAuthor.trim(), status: "reading" }]; }); setDraft(""); setDraftAuthor(""); };
-  const cycle = (id) => update((s) => { const b = s.reading.find((x) => x.id === id); if (b) b.status = b.status === "reading" ? "done" : b.status === "done" ? "queued" : "reading"; });
-  const remove = (id) => update((s) => { s.reading = s.reading.filter((x) => x.id !== id); });
+  const add = () => {
+    if (!draft.trim()) return;
+    update(s => {
+      s.reading = [...(s.reading || []), {
+        id: uid(),
+        title: draft.trim(),
+        author: draftAuthor.trim(),
+        status: "reading"
+      }];
+    });
+    setDraft("");
+    setDraftAuthor("");
+  };
+  const cycle = id => update(s => {
+    const b = s.reading.find(x => x.id === id);
+    if (b) b.status = b.status === "reading" ? "done" : b.status === "done" ? "queued" : "reading";
+  });
+  const remove = id => update(s => {
+    s.reading = s.reading.filter(x => x.id !== id);
+  });
   const [editId, setEditId] = useState(null);
   const [editVal, setEditVal] = useState("");
   const [editAuthor, setEditAuthor] = useState("");
@@ -1143,95 +2501,251 @@ function ReadingCard({ state, update }) {
   const [recLoading, setRecLoading] = useState(false);
   const [recErr, setRecErr] = useState("");
   const [rtab, setRtab] = useState("reading");
-  const rename = (id) => { update((s) => { const b = s.reading.find((x) => x.id === id); if (b && editVal.trim()) { b.title = editVal.trim(); b.author = editAuthor.trim(); } }); setEditId(null); };
-  const recommend = async () => {
-    setRecErr(""); setRecLoading(true); setRecs(null);
-    try { setRecs(await generateBookRecs(reading)); } catch { setRecErr("Couldn't get recommendations — try again."); }
-    finally { setRecLoading(false); }
+  const rename = id => {
+    update(s => {
+      const b = s.reading.find(x => x.id === id);
+      if (b && editVal.trim()) {
+        b.title = editVal.trim();
+        b.author = editAuthor.trim();
+      }
+    });
+    setEditId(null);
   };
-  const addRec = (r) => update((s) => {
+  const recommend = async () => {
+    setRecErr("");
+    setRecLoading(true);
+    setRecs(null);
+    try {
+      setRecs(await generateBookRecs(reading));
+    } catch {
+      setRecErr("Couldn't get recommendations — try again.");
+    } finally {
+      setRecLoading(false);
+    }
+  };
+  const addRec = r => update(s => {
     const cur = s.reading || [];
-    if (!cur.some((b) => b.title.toLowerCase() === (r.title || "").toLowerCase())) s.reading = [...cur, { id: uid(), title: r.title, author: r.author || "", status: "queued" }];
+    if (!cur.some(b => b.title.toLowerCase() === (r.title || "").toLowerCase())) s.reading = [...cur, {
+      id: uid(),
+      title: r.title,
+      author: r.author || "",
+      status: "queued"
+    }];
   });
   const doImport = () => {
     // accepts plain titles (one per line) OR a Goodreads CSV export (grabs the Title column)
-    const lines = bulk.split("\n").map((l) => l.trim()).filter(Boolean);
+    const lines = bulk.split("\n").map(l => l.trim()).filter(Boolean);
     const isCsv = /(^|,)"?title"?(,|$)/i.test(lines[0] || "");
-    const parseCsvRow = (row) => { const m = row.match(/("([^"]|"")*"|[^,]*)(,|$)/g) || []; return m.map((c) => c.replace(/,$/, "").replace(/^"|"$/g, "").replace(/""/g, '"').trim()); };
+    const parseCsvRow = row => {
+      const m = row.match(/("([^"]|"")*"|[^,]*)(,|$)/g) || [];
+      return m.map(c => c.replace(/,$/, "").replace(/^"|"$/g, "").replace(/""/g, '"').trim());
+    };
     let books = [];
     if (isCsv) {
-      const header = parseCsvRow(lines[0]).map((h) => h.toLowerCase());
+      const header = parseCsvRow(lines[0]).map(h => h.toLowerCase());
       const ti = header.indexOf("title");
       const ai = header.indexOf("author");
-      books = lines.slice(1).map((r) => { const c = parseCsvRow(r); return { title: c[ti], author: ai >= 0 ? c[ai] : "" }; }).filter((b) => b.title);
-    } else { books = lines.map((t) => ({ title: t, author: "" })); }
-    if (books.length) update((s) => { s.reading = [...(s.reading || []), ...books.map((b) => ({ id: uid(), title: b.title, author: b.author, status: "queued" }))]; });
-    setBulk(""); setImporting(false);
+      books = lines.slice(1).map(r => {
+        const c = parseCsvRow(r);
+        return {
+          title: c[ti],
+          author: ai >= 0 ? c[ai] : ""
+        };
+      }).filter(b => b.title);
+    } else {
+      books = lines.map(t => ({
+        title: t,
+        author: ""
+      }));
+    }
+    if (books.length) update(s => {
+      s.reading = [...(s.reading || []), ...books.map(b => ({
+        id: uid(),
+        title: b.title,
+        author: b.author,
+        status: "queued"
+      }))];
+    });
+    setBulk("");
+    setImporting(false);
   };
-  const groups = { reading: reading.filter((b) => b.status === "reading"), queued: reading.filter((b) => b.status === "queued"), done: reading.filter((b) => b.status === "done") };
-  const bookRow = (b) => (editId === b.id ? (
-    <div key={b.id} className="ra-bookedit">
-      <input className="ra-input sm" value={editVal} autoFocus onChange={(e) => setEditVal(e.target.value)} onKeyDown={(e) => e.key === "Enter" && rename(b.id)} placeholder="Title" />
-      <div className="ra-inputrow">
-        <input className="ra-input sm" value={editAuthor} onChange={(e) => setEditAuthor(e.target.value)} onKeyDown={(e) => e.key === "Enter" && rename(b.id)} placeholder="Author" />
-        <button className="ra-book-btn on" onClick={() => rename(b.id)}>Save</button>
-        <button className="ra-ghost sm" onClick={() => setEditId(null)}><X size={14} /></button>
-      </div>
-    </div>
-  ) : (
-    <div key={b.id} className="ra-book">
-      <button className={"ra-status " + b.status} onClick={() => cycle(b.id)} title="Change status">{b.status === "queued" ? "want" : b.status}</button>
-      <span className={b.status === "done" ? "struck" : ""}>{b.title}{b.author ? <em className="ra-author"> · {b.author}</em> : null}</span>
-      <button className="ra-ghost sm" onClick={() => { setEditId(b.id); setEditVal(b.title); setEditAuthor(b.author || ""); }}><Pencil size={13} /></button>
-      <button className="ra-ghost sm" onClick={() => remove(b.id)}><Trash2 size={13} /></button>
-    </div>
-  ));
-  return (
-    <div className="ra-card" style={{ borderTopColor: "#5EA8E8" }}>
-      <div className="ra-card-h"><BookOpen size={16} color="#5EA8E8" /> Reading list</div>
-      <div className="ra-inputrow"><input className="ra-input sm" placeholder="Add a book" value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => e.key === "Enter" && add()} /><input className="ra-input sm ra-authorinput" placeholder="Author" value={draftAuthor} onChange={(e) => setDraftAuthor(e.target.value)} onKeyDown={(e) => e.key === "Enter" && add()} /><button className="ra-suggest" onClick={add}><Plus size={15} /></button></div>
-
-      <div className="ra-rtabs">
-        {[["reading", "Reading"], ["queued", "Want to read"], ["done", "Read"], ["recs", "Recs"]].map(([id, label]) => (
-          <button key={id} className={"ra-rtab" + (rtab === id ? " on" : "")} onClick={() => setRtab(id)}>{id === "recs" ? <Sparkles size={12} /> : null}{label}{id !== "recs" ? <span className="ra-rtab-n">{groups[id].length}</span> : null}</button>
-        ))}
-      </div>
-
-      {rtab !== "recs" ? (
-        <div className="ra-rlist">
-          {groups[rtab].length === 0 ? <p className="ra-dim ra-small">Nothing here yet.</p> : groups[rtab].map(bookRow)}
-          {rtab === "queued" && (!importing ? (
-            <button className="ra-import-toggle" onClick={() => setImporting(true)}>Import from Goodreads →</button>
-          ) : (
-            <div className="ra-import">
-              <p className="ra-dim ra-small">Goodreads has no live sync. Export your library (My Books → Import/Export) and paste the CSV — or paste titles, one per line.</p>
-              <textarea className="ra-textarea" rows={4} placeholder="Paste CSV or one title per line…" value={bulk} onChange={(e) => setBulk(e.target.value)} />
-              <div className="ra-inputrow"><button className="ra-ghost-btn" onClick={() => { setImporting(false); setBulk(""); }}>Cancel</button><button className="ra-primary sm" style={{ background: "#5EA8E8" }} onClick={doImport} disabled={!bulk.trim()}>Import</button></div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="ra-rlist">
-          <button className="ra-wo-gen" style={{ background: "#5EA8E8" }} onClick={recommend} disabled={recLoading}>{recLoading ? <Loader2 size={16} className="spin" /> : <Sparkles size={16} />}{recLoading ? "Finding books for you…" : recs ? "More recommendations" : "Recommend books for me"}</button>
-          <p className="ra-dim ra-small">{reading.length ? "Based on what you've read and are reading." : "Add a few books first for tailored picks — or get a starter set."}</p>
-          {recErr && <p className="ra-warn ra-small">{recErr}</p>}
-          {recs && recs.length > 0 && (
-            <div className="ra-meals" style={{ marginTop: 4 }}>
-              {recs.map((r, i) => {
-                const owned = reading.some((b) => b.title.toLowerCase() === (r.title || "").toLowerCase());
-                return (
-                  <div key={i} className="ra-meal">
-                    <div className="ra-meal-body"><span className="ra-meal-name"><b>{r.title}</b>{r.author ? <em className="ra-author"> · {r.author}</em> : null}</span>{r.why && <span className="ra-dim ra-small">{r.why}</span>}</div>
-                    <div className="ra-meal-r"><button className="ra-book-btn on" style={{ background: owned ? "transparent" : "#5EA8E8", color: owned ? "var(--dim)" : "#16182B", borderColor: "#5EA8E8" }} disabled={owned} onClick={() => addRec(r)}>{owned ? "Added" : "Add"}</button></div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
+  const groups = {
+    reading: reading.filter(b => b.status === "reading"),
+    queued: reading.filter(b => b.status === "queued"),
+    done: reading.filter(b => b.status === "done")
+  };
+  const bookRow = b => editId === b.id ? /*#__PURE__*/React.createElement("div", {
+    key: b.id,
+    className: "ra-bookedit"
+  }, /*#__PURE__*/React.createElement("input", {
+    className: "ra-input sm",
+    value: editVal,
+    autoFocus: true,
+    onChange: e => setEditVal(e.target.value),
+    onKeyDown: e => e.key === "Enter" && rename(b.id),
+    placeholder: "Title"
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "ra-inputrow"
+  }, /*#__PURE__*/React.createElement("input", {
+    className: "ra-input sm",
+    value: editAuthor,
+    onChange: e => setEditAuthor(e.target.value),
+    onKeyDown: e => e.key === "Enter" && rename(b.id),
+    placeholder: "Author"
+  }), /*#__PURE__*/React.createElement("button", {
+    className: "ra-book-btn on",
+    onClick: () => rename(b.id)
+  }, "Save"), /*#__PURE__*/React.createElement("button", {
+    className: "ra-ghost sm",
+    onClick: () => setEditId(null)
+  }, /*#__PURE__*/React.createElement(X, {
+    size: 14
+  })))) : /*#__PURE__*/React.createElement("div", {
+    key: b.id,
+    className: "ra-book"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "ra-status " + b.status,
+    onClick: () => cycle(b.id),
+    title: "Change status"
+  }, b.status === "queued" ? "want" : b.status), /*#__PURE__*/React.createElement("span", {
+    className: b.status === "done" ? "struck" : ""
+  }, b.title, b.author ? /*#__PURE__*/React.createElement("em", {
+    className: "ra-author"
+  }, " · ", b.author) : null), /*#__PURE__*/React.createElement("button", {
+    className: "ra-ghost sm",
+    onClick: () => {
+      setEditId(b.id);
+      setEditVal(b.title);
+      setEditAuthor(b.author || "");
+    }
+  }, /*#__PURE__*/React.createElement(Pencil, {
+    size: 13
+  })), /*#__PURE__*/React.createElement("button", {
+    className: "ra-ghost sm",
+    onClick: () => remove(b.id)
+  }, /*#__PURE__*/React.createElement(Trash2, {
+    size: 13
+  })));
+  return /*#__PURE__*/React.createElement("div", {
+    className: "ra-card",
+    style: {
+      borderTopColor: "#5EA8E8"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ra-card-h"
+  }, /*#__PURE__*/React.createElement(BookOpen, {
+    size: 16,
+    color: "#5EA8E8"
+  }), " Reading list"), /*#__PURE__*/React.createElement("div", {
+    className: "ra-inputrow"
+  }, /*#__PURE__*/React.createElement("input", {
+    className: "ra-input sm",
+    placeholder: "Add a book",
+    value: draft,
+    onChange: e => setDraft(e.target.value),
+    onKeyDown: e => e.key === "Enter" && add()
+  }), /*#__PURE__*/React.createElement("input", {
+    className: "ra-input sm ra-authorinput",
+    placeholder: "Author",
+    value: draftAuthor,
+    onChange: e => setDraftAuthor(e.target.value),
+    onKeyDown: e => e.key === "Enter" && add()
+  }), /*#__PURE__*/React.createElement("button", {
+    className: "ra-suggest",
+    onClick: add
+  }, /*#__PURE__*/React.createElement(Plus, {
+    size: 15
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "ra-rtabs"
+  }, [["reading", "Reading"], ["queued", "Want to read"], ["done", "Read"], ["recs", "Recs"]].map(([id, label]) => /*#__PURE__*/React.createElement("button", {
+    key: id,
+    className: "ra-rtab" + (rtab === id ? " on" : ""),
+    onClick: () => setRtab(id)
+  }, id === "recs" ? /*#__PURE__*/React.createElement(Sparkles, {
+    size: 12
+  }) : null, label, id !== "recs" ? /*#__PURE__*/React.createElement("span", {
+    className: "ra-rtab-n"
+  }, groups[id].length) : null))), rtab !== "recs" ? /*#__PURE__*/React.createElement("div", {
+    className: "ra-rlist"
+  }, groups[rtab].length === 0 ? /*#__PURE__*/React.createElement("p", {
+    className: "ra-dim ra-small"
+  }, "Nothing here yet.") : groups[rtab].map(bookRow), rtab === "queued" && (!importing ? /*#__PURE__*/React.createElement("button", {
+    className: "ra-import-toggle",
+    onClick: () => setImporting(true)
+  }, "Import from Goodreads →") : /*#__PURE__*/React.createElement("div", {
+    className: "ra-import"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "ra-dim ra-small"
+  }, "Goodreads has no live sync. Export your library (My Books → Import/Export) and paste the CSV — or paste titles, one per line."), /*#__PURE__*/React.createElement("textarea", {
+    className: "ra-textarea",
+    rows: 4,
+    placeholder: "Paste CSV or one title per line…",
+    value: bulk,
+    onChange: e => setBulk(e.target.value)
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "ra-inputrow"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "ra-ghost-btn",
+    onClick: () => {
+      setImporting(false);
+      setBulk("");
+    }
+  }, "Cancel"), /*#__PURE__*/React.createElement("button", {
+    className: "ra-primary sm",
+    style: {
+      background: "#5EA8E8"
+    },
+    onClick: doImport,
+    disabled: !bulk.trim()
+  }, "Import"))))) : /*#__PURE__*/React.createElement("div", {
+    className: "ra-rlist"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "ra-wo-gen",
+    style: {
+      background: "#5EA8E8"
+    },
+    onClick: recommend,
+    disabled: recLoading
+  }, recLoading ? /*#__PURE__*/React.createElement(Loader2, {
+    size: 16,
+    className: "spin"
+  }) : /*#__PURE__*/React.createElement(Sparkles, {
+    size: 16
+  }), recLoading ? "Finding books for you…" : recs ? "More recommendations" : "Recommend books for me"), /*#__PURE__*/React.createElement("p", {
+    className: "ra-dim ra-small"
+  }, reading.length ? "Based on what you've read and are reading." : "Add a few books first for tailored picks — or get a starter set."), recErr && /*#__PURE__*/React.createElement("p", {
+    className: "ra-warn ra-small"
+  }, recErr), recs && recs.length > 0 && /*#__PURE__*/React.createElement("div", {
+    className: "ra-meals",
+    style: {
+      marginTop: 4
+    }
+  }, recs.map((r, i) => {
+    const owned = reading.some(b => b.title.toLowerCase() === (r.title || "").toLowerCase());
+    return /*#__PURE__*/React.createElement("div", {
+      key: i,
+      className: "ra-meal"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "ra-meal-body"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "ra-meal-name"
+    }, /*#__PURE__*/React.createElement("b", null, r.title), r.author ? /*#__PURE__*/React.createElement("em", {
+      className: "ra-author"
+    }, " · ", r.author) : null), r.why && /*#__PURE__*/React.createElement("span", {
+      className: "ra-dim ra-small"
+    }, r.why)), /*#__PURE__*/React.createElement("div", {
+      className: "ra-meal-r"
+    }, /*#__PURE__*/React.createElement("button", {
+      className: "ra-book-btn on",
+      style: {
+        background: owned ? "transparent" : "#5EA8E8",
+        color: owned ? "var(--dim)" : "#16182B",
+        borderColor: "#5EA8E8"
+      },
+      disabled: owned,
+      onClick: () => addRec(r)
+    }, owned ? "Added" : "Add")));
+  }))));
 }
 
 /* ------------------------------ Styles ----------------------------- */
@@ -1239,23 +2753,62 @@ function AISettingsCard() {
   const cur = getAI();
   const [key, setKey] = useState(cur.key || "");
   const [saved, setSaved] = useState(false);
-  const save = () => { setAI({ provider: "gemini", key: key.trim() }); setSaved(true); setTimeout(() => setSaved(false), 1500); };
-  return (
-    <div className="ra-card" style={{ borderTopColor: "#A78BE0" }}>
-      <div className="ra-card-h"><Sparkles size={16} color="#A78BE0" /> AI key (for generators)</div>
-      <p className="ra-dim ra-small" style={{ marginBottom: 10 }}>The generate / suggest features use Google Gemini's free tier. Get a free key at aistudio.google.com (a Google account, no card), paste it here once. Everything else works without it.</p>
-      <div className="ra-fieldlabel">Provider</div>
-      <select className="ra-input sm" value="gemini" disabled><option value="gemini">Google Gemini — free tier</option></select>
-      <div className="ra-fieldlabel">API key</div>
-      <input className="ra-input sm" type="password" placeholder="Paste your Gemini API key" value={key} onChange={(e) => setKey(e.target.value)} />
-      <button className="ra-primary sm" style={{ background: "#A78BE0", marginTop: 10 }} onClick={save} disabled={!key.trim()}>{saved ? "Saved \u2713" : "Save key"}</button>
-      {cur.key ? <p className="ra-dim ra-small" style={{ marginTop: 8 }}>A key is saved on this device.</p> : null}
-    </div>
-  );
+  const save = () => {
+    setAI({
+      provider: "gemini",
+      key: key.trim()
+    });
+    setSaved(true);
+    setTimeout(() => setSaved(false), 1500);
+  };
+  return /*#__PURE__*/React.createElement("div", {
+    className: "ra-card",
+    style: {
+      borderTopColor: "#A78BE0"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ra-card-h"
+  }, /*#__PURE__*/React.createElement(Sparkles, {
+    size: 16,
+    color: "#A78BE0"
+  }), " AI key (for generators)"), /*#__PURE__*/React.createElement("p", {
+    className: "ra-dim ra-small",
+    style: {
+      marginBottom: 10
+    }
+  }, "The generate / suggest features use Google Gemini's free tier. Get a free key at aistudio.google.com (a Google account, no card), paste it here once. Everything else works without it."), /*#__PURE__*/React.createElement("div", {
+    className: "ra-fieldlabel"
+  }, "Provider"), /*#__PURE__*/React.createElement("select", {
+    className: "ra-input sm",
+    value: "gemini",
+    disabled: true
+  }, /*#__PURE__*/React.createElement("option", {
+    value: "gemini"
+  }, "Google Gemini — free tier")), /*#__PURE__*/React.createElement("div", {
+    className: "ra-fieldlabel"
+  }, "API key"), /*#__PURE__*/React.createElement("input", {
+    className: "ra-input sm",
+    type: "password",
+    placeholder: "Paste your Gemini API key",
+    value: key,
+    onChange: e => setKey(e.target.value)
+  }), /*#__PURE__*/React.createElement("button", {
+    className: "ra-primary sm",
+    style: {
+      background: "#A78BE0",
+      marginTop: 10
+    },
+    onClick: save,
+    disabled: !key.trim()
+  }, saved ? "Saved \u2713" : "Save key"), cur.key ? /*#__PURE__*/React.createElement("p", {
+    className: "ra-dim ra-small",
+    style: {
+      marginTop: 8
+    }
+  }, "A key is saved on this device.") : null);
 }
-
 function Styles() {
-  return (<style>{`
+  return /*#__PURE__*/React.createElement("style", null, `
   @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap');
   * { box-sizing:border-box; margin:0; padding:0; }
   .ra-root { --bg:#16182B; --surface:#20223C; --surface2:#282A48; --line:#33355C; --text:#E8E9F3; --dim:#9A9DB8; --faint:#4A4C6B;
@@ -1475,14 +3028,17 @@ function Styles() {
   .ra-navbtn { flex:1; background:transparent; border:none; color:var(--faint); display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10.5px; font-weight:600; letter-spacing:.4px; cursor:pointer; font-family:inherit; padding:4px; }
   .ra-navbtn.on { color:#A78BE0; }
   @media (prefers-reduced-motion:reduce) { * { animation:none !important; transition:none !important; } }
-  `}</style>);
+  `);
 }
-
-
-
-const _root = ReactDOM.createRoot(document.getElementById("root"));
-_root.render(React.createElement(App));
-if ("serviceWorker" in navigator) { window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(function(){})); }
+try {
+  const _root = ReactDOM.createRoot(document.getElementById("root"));
+  _root.render(React.createElement(App));
+} catch (e) {
+  window.__bootErr(e && e.stack || e);
+}
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(function () {}));
+}
 </script>
 </body>
 </html>
