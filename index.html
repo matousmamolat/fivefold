@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
-<meta name="theme-color" content="#16182B" />
+<meta name="theme-color" content="#141527" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest" />
 <link rel="apple-touch-icon" href="icon-180.png" />
 <title>Fivefold</title>
-<style>html,body{height:100%;margin:0;background:#16182B}#root{min-height:100%}#boot{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;color:#9A9DB8;font-family:system-ui;font-size:14px}</style>
+<style>html,body{height:100%;margin:0;background:#141527}#root{min-height:100%}#boot{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;color:#9698B4;font-family:system-ui;font-size:14px}</style>
 </head>
 <body>
 <div id="root"><div id="boot">Loading Fivefold…</div></div>
@@ -3056,7 +3056,7 @@ function Styles() {
   return /*#__PURE__*/React.createElement("style", null, `
   @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap');
   * { box-sizing:border-box; margin:0; padding:0; }
-  .ra-root { --bg:#16182B; --surface:#20223C; --surface2:#282A48; --line:#33355C; --text:#E8E9F3; --dim:#9A9DB8; --faint:#4A4C6B;
+  .ra-root { --bg:#141527; --surface:#1D1F35; --surface2:#262943; --line:#2A2C46; --text:#ECEDF5; --dim:#9698B4; --faint:#494B67;
     font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; max-width:480px; margin:0 auto; display:flex; flex-direction:column; position:relative; overflow-x:hidden; }
   .mono { font-family:'Space Mono',monospace; }
   .ra-center { align-items:center; justify-content:center; }
@@ -3285,6 +3285,41 @@ function Styles() {
   /* honour the notch on the sides for the main scroll views */
   .ra-view { padding-left:calc(20px + env(safe-area-inset-left)); padding-right:calc(20px + env(safe-area-inset-right)); }
   .ra-nav { padding-left:env(safe-area-inset-left); padding-right:env(safe-area-inset-right); }
+
+  /* ---- polish: minimal, calm, tactile ---- */
+  .ra-root { -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
+  .ra-main { -webkit-overflow-scrolling:touch; }
+  .ra-view { padding-top:24px; padding-bottom:40px; }
+  .ra-h1 { letter-spacing:-.3px; }
+
+  /* softer corners for a cleaner look — keep the pillar colour accents for life */
+  .ra-card, .ra-goal, .ra-weigh, .ra-daycard, .ra-books, .ra-ideas, .ra-wo, .ra-wo-card, .ra-mealslot, .ra-meal, .ra-sheet-task, .ra-stat, .ra-reward { border-radius:16px; }
+  .ra-task { border-radius:15px; }
+  .ra-mini, .ra-status, .ra-tag, .ra-subchip, .ra-subtype, .ra-pillchip { border-radius:999px; }
+
+  /* gentle depth so cards lift off the background a touch (still calm) */
+  .ra-card, .ra-goal, .ra-daycard { box-shadow:0 1px 2px rgba(0,0,0,.16); }
+
+  /* tactile press feedback — makes the whole app feel responsive */
+  button, .ra-navbtn, .ra-pillchip, .ra-mini, .ra-idea, .ra-status, .ra-rtab, .ra-daycard, .ra-tchip, .ra-book-btn, .ra-subtype, .ra-gear, .ra-suggest, .ra-addbtn, .ra-lightbtn, .ra-task-head, .ra-sub, .ra-mealcheck, .ra-import-toggle, .ra-settings-link, .ra-ghost, .ra-ghost-btn, .ra-wo-gen, .ra-ideas-btn, .ra-primary, .ra-book, .ra-bookrow {
+    transition:transform .13s cubic-bezier(.2,.8,.2,1), opacity .14s ease, background-color .16s ease, border-color .16s ease, color .16s ease, box-shadow .16s ease;
+  }
+  button:active, .ra-navbtn:active, .ra-pillchip:active, .ra-mini:active, .ra-idea:active, .ra-book-btn:active, .ra-addbtn:active, .ra-primary:active, .ra-wo-gen:active, .ra-ideas-btn:active, .ra-gear:active, .ra-suggest:active, .ra-daycard:active, .ra-tchip:active, .ra-rtab:active, .ra-lightbtn:active, .ra-status:active, .ra-settings-link:active, .ra-import-toggle:active, .ra-ghost-btn:active { transform:scale(.965); }
+  .ra-mealcheck:active, .ra-check:active { transform:scale(.88); }
+
+  /* comfier hit targets */
+  .ra-gear { width:38px; height:38px; }
+  .ra-suggest { min-height:44px; }
+
+  /* nav: a quiet active marker instead of only a colour swap */
+  .ra-navbtn { position:relative; padding:8px 4px 6px; }
+  .ra-navbtn.on::before { content:""; position:absolute; top:-1px; left:50%; transform:translateX(-50%); width:20px; height:2px; border-radius:2px; background:#A78BE0; }
+
+  /* a little life on the key moments */
+  .ra-reward.open { animation:rewardPop .5s cubic-bezier(.2,.9,.2,1); }
+  @keyframes rewardPop { 0%{ transform:scale(.985);} 55%{ transform:scale(1.012);} 100%{ transform:scale(1);} }
+  .ra-fill, .ra-goal-fill, .ra-goal-sched { transition:width .5s cubic-bezier(.2,.8,.2,1); }
+  .ra-check { transition:background .18s ease, transform .13s ease; }
   `);
 }
 try {
