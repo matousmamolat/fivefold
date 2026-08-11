@@ -1,0 +1,1488 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+<meta name="theme-color" content="#16182B" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Fivefold" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="icon-180.png" />
+<title>Fivefold</title>
+<style>html,body{height:100%;margin:0;background:#16182B}#root{min-height:100%}#boot{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;color:#9A9DB8;font-family:system-ui;font-size:14px}</style>
+</head>
+<body>
+<div id="root"><div id="boot">Loading Fivefold…</div></div>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useCallback } = React;
+
+if (!window.storage) window.storage = {
+  async get(k) { const v = localStorage.getItem(k); return v == null ? null : { value: v }; },
+  async set(k, val) { localStorage.setItem(k, val); return { ok: true }; },
+};
+
+function Icon({ name, size = 24, color = "currentColor", strokeWidth = 2, style, className }) {
+  const lib = window.lucide || {};
+  const store = lib.icons || lib;
+  const names = Array.isArray(name) ? name : [name];
+  let node = null;
+  for (const n of names) { if (store[n]) { node = store[n]; break; } }
+  if (!node) return React.createElement("svg", { width: size, height: size, viewBox: "0 0 24 24" });
+  const kids = Array.isArray(node) ? node : (node.iconNode || []);
+  return React.createElement("svg", { width: size, height: size, viewBox: "0 0 24 24", fill: "none", stroke: color, strokeWidth: strokeWidth, strokeLinecap: "round", strokeLinejoin: "round", style: style, className: className },
+    (kids || []).map((c, i) => React.createElement(c[0], Object.assign({ key: i }, c[1]))));
+}
+const Loader2 = (p) => React.createElement(Icon, Object.assign({ name: ["Loader2", "LoaderCircle"] }, p));
+const Heart = (p) => React.createElement(Icon, Object.assign({ name: "Heart" }, p));
+const Palette = (p) => React.createElement(Icon, Object.assign({ name: "Palette" }, p));
+const Wind = (p) => React.createElement(Icon, Object.assign({ name: "Wind" }, p));
+const Users = (p) => React.createElement(Icon, Object.assign({ name: "Users" }, p));
+const Sprout = (p) => React.createElement(Icon, Object.assign({ name: "Sprout" }, p));
+const Flame = (p) => React.createElement(Icon, Object.assign({ name: "Flame" }, p));
+const Gamepad2 = (p) => React.createElement(Icon, Object.assign({ name: "Gamepad2" }, p));
+const Plus = (p) => React.createElement(Icon, Object.assign({ name: "Plus" }, p));
+const Check = (p) => React.createElement(Icon, Object.assign({ name: "Check" }, p));
+const Calendar = (p) => React.createElement(Icon, Object.assign({ name: "Calendar" }, p));
+const Sparkles = (p) => React.createElement(Icon, Object.assign({ name: "Sparkles" }, p));
+const X = (p) => React.createElement(Icon, Object.assign({ name: "X" }, p));
+const ChevronLeft = (p) => React.createElement(Icon, Object.assign({ name: "ChevronLeft" }, p));
+const ChevronRight = (p) => React.createElement(Icon, Object.assign({ name: "ChevronRight" }, p));
+const Moon = (p) => React.createElement(Icon, Object.assign({ name: "Moon" }, p));
+const User = (p) => React.createElement(Icon, Object.assign({ name: "User" }, p));
+const BookOpen = (p) => React.createElement(Icon, Object.assign({ name: "BookOpen" }, p));
+const Trash2 = (p) => React.createElement(Icon, Object.assign({ name: "Trash2" }, p));
+const Lock = (p) => React.createElement(Icon, Object.assign({ name: "Lock" }, p));
+const Unlock = (p) => React.createElement(Icon, Object.assign({ name: "Unlock" }, p));
+const Dumbbell = (p) => React.createElement(Icon, Object.assign({ name: "Dumbbell" }, p));
+const Clock = (p) => React.createElement(Icon, Object.assign({ name: "Clock" }, p));
+const RefreshCw = (p) => React.createElement(Icon, Object.assign({ name: "RefreshCw" }, p));
+const Pencil = (p) => React.createElement(Icon, Object.assign({ name: "Pencil" }, p));
+const Utensils = (p) => React.createElement(Icon, Object.assign({ name: "Utensils" }, p));
+const Droplet = (p) => React.createElement(Icon, Object.assign({ name: "Droplet" }, p));
+const Settings = (p) => React.createElement(Icon, Object.assign({ name: "Settings" }, p));
+const Scale = (p) => React.createElement(Icon, Object.assign({ name: "Scale" }, p));
+
+
+
+/* ----------------------------- Pillars ----------------------------- */
+const PILLARS = {
+  health:     { name: "Health",      color: "#4EC1A6", Icon: Heart,   generatable: false },
+  creativity: { name: "Creativity",  color: "#E8B04B", Icon: Palette,  generatable: true, types: ["drawing", "writing", "collage"] },
+  mindfulness:{ name: "Mindfulness", color: "#A78BE0", Icon: Wind,     generatable: true },
+  socialising:{ name: "Socialising", color: "#EC7A93", Icon: Users,    generatable: true },
+  growth:     { name: "Growth",      color: "#5EA8E8", Icon: Sprout,   generatable: true },
+};
+const PILLAR_KEYS = Object.keys(PILLARS);
+
+/* --------------------------- Date helpers -------------------------- */
+const iso = (d) => d.toISOString().slice(0, 10);
+const todayISO = () => iso(new Date());
+const addDays = (dateStr, n) => { const d = new Date(dateStr + "T00:00:00"); d.setDate(d.getDate() + n); return iso(d); };
+const dayName = (dateStr) => new Date(dateStr + "T00:00:00").toLocaleDateString("en-US", { weekday: "short" });
+const dayNum = (dateStr) => new Date(dateStr + "T00:00:00").getDate();
+const prettyDate = (dateStr) => new Date(dateStr + "T00:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+const weekOf = (dateStr) => { const d = new Date(dateStr + "T00:00:00"); const wd = (d.getDay() + 6) % 7; const monday = addDays(dateStr, -wd); return Array.from({ length: 7 }, (_, i) => addDays(monday, i)); };
+
+/* --------------------------- Persistence --------------------------- */
+const KEY = "routine:v2";
+const uid = () => Math.random().toString(36).slice(2, 9);
+const DEFAULT = {
+  days: {},
+  reading: [],
+  profile: {
+    fitness: {
+      level: "Getting back after a break",
+      goals: ["Strength / muscle", "General health & energy"],
+      equipment: ["Bodyweight", "Dumbbells / bands", "Pull-up & dip bars"],
+      session: 35,
+    },
+  },
+  food: {
+    profile: {
+      diet: "No restrictions",
+      cooking: "Barely — mostly no-cook",
+      focus: ["High-protein (for strength)", "Cheap & simple", "Balanced & varied"],
+      mealTimes: [
+        { id: "mt1", slot: "Breakfast", time: "08:00" },
+        { id: "mt2", slot: "Lunch", time: "12:30" },
+        { id: "mt3", slot: "Snack", time: "16:00" },
+        { id: "mt4", slot: "Dinner", time: "19:30" },
+      ],
+      proteinPerKg: 1.6,
+    },
+    log: {},
+    plan: {},
+  },
+};
+// fill any keys missing from state saved by an earlier version
+function normalize(s) {
+  const n = s || structuredClone(DEFAULT);
+  n.days = n.days || {};
+  n.reading = n.reading || [];
+  n.profile = n.profile || {};
+  n.profile.fitness = n.profile.fitness || structuredClone(DEFAULT.profile.fitness);
+  n.food = n.food || structuredClone(DEFAULT.food);
+  n.food.profile = n.food.profile || structuredClone(DEFAULT.food.profile);
+  n.food.profile.mealTimes = n.food.profile.mealTimes || structuredClone(DEFAULT.food.profile.mealTimes);
+  n.food.profile.proteinPerKg = n.food.profile.proteinPerKg || 1.6;
+  n.food.log = n.food.log || {};
+  n.food.plan = n.food.plan || {};
+  n.profile.weightLog = n.profile.weightLog || [];
+  n.profile.weighCadence = n.profile.weighCadence || "weekly";
+  n.profile.eventInterests = n.profile.eventInterests || ["Gallery exhibitions", "Markets", "Artist markets", "Underground / small gigs", "Park & outdoor events"];
+  n.profile.eventNotes = n.profile.eventNotes || "";
+  return n;
+}
+const daysBetween = (a, b) => Math.round((new Date(b + "T00:00:00") - new Date(a + "T00:00:00")) / 86400000);
+function weighInfo(profile) {
+  const log = profile.weightLog || [];
+  const cadence = profile.weighCadence === "biweekly" ? 14 : 7;
+  const last = log.length ? log[log.length - 1] : null;
+  const due = !last || daysBetween(last.date, todayISO()) >= cadence;
+  const prev = log.length > 1 ? log[log.length - 2] : null;
+  const delta = last && prev ? +(last.kg - prev.kg).toFixed(1) : null;
+  return { due, last, prev, delta, cadence };
+}
+const nowHM = () => new Date().toTimeString().slice(0, 5);
+const proteinTargetOf = (profile, fp) => { const w = profile?.weight; const perKg = (fp?.proteinPerKg) || 1.6; return w ? Math.round(w * perKg) : null; };
+async function loadState() { try { const r = await window.storage.get(KEY); if (r && r.value) return JSON.parse(r.value); } catch {} return null; }
+async function saveState(s) { try { await window.storage.set(KEY, JSON.stringify(s)); } catch {} }
+
+/* ------------------------- AI: quick suggest ----------------------- */
+const AI_LS = "fivefold:ai";
+function getAI() { try { return JSON.parse(localStorage.getItem(AI_LS)) || {}; } catch { return {}; } }
+function setAI(cfg) { localStorage.setItem(AI_LS, JSON.stringify(cfg)); }
+async function geminiComplete(prompt, key) {
+  const res = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + encodeURIComponent(key), {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+  });
+  if (!res.ok) throw new Error("Gemini HTTP " + res.status);
+  const data = await res.json();
+  const parts = (data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) || [];
+  return parts.map((p) => p.text || "").join(" ").trim();
+}
+const AI_PROVIDERS = { gemini: geminiComplete };
+async function callClaude(prompt) {
+  const cfg = getAI();
+  const key = (cfg.key || "").trim();
+  if (!key) { const e = new Error("Add a free AI key in Settings to use generators."); e.code = "NO_KEY"; throw e; }
+  const fn = AI_PROVIDERS[cfg.provider || "gemini"] || geminiComplete;
+  return fn(prompt, key);
+}
+async function findEvents(city, interests, notes) {
+  // Live event lookup needs a dedicated events API (later step). Returning empty makes the
+  // Socialising planner fall back to AI-generated "things to do with people" ideas.
+  return [];
+}
+
+async function suggestMany(pillarKey, subtype, history) {
+  let prompt;
+  if (pillarKey === "growth") {
+    const hist = (history || []).slice(0, 12);
+    prompt = hist.length
+      ? `A person has recently been doing these growth activities: ${hist.join("; ")}.
+Give 4 growth activities that CONTINUE and build on these existing threads — the next step in the same language, topic, or skill they're already pursuing — so they stay consistent instead of jumping to unrelated new things. If a thread is clearly ongoing (e.g. a language or a subject), advance it. Each a short, specific sentence. Return ONLY a JSON array of 4 strings, no prose, no fences.`
+      : `Give 4 distinct growth activities for someone starting out: e.g. beginning a language, or understanding one idea from science or philosophy. Each a short, specific sentence. Return ONLY a JSON array of 4 strings, no prose, no fences.`;
+  } else {
+    const themes = {
+      creativity: `concrete creative tasks for "${subtype || "drawing"}", each doable in under an hour`,
+      mindfulness:`specific mindful activities (short meditation, calm walk, tidying a space, breathing, journalling)`,
+      socialising:`specific offline things to do with other people that don't need a scheduled event`,
+    };
+    prompt = `Give 4 distinct ${themes[pillarKey] || themes.creativity}. Each a short sentence. Return ONLY a JSON array of 4 strings, no prose, no markdown fences.`;
+  }
+  let txt = await callClaude(prompt);
+  txt = txt.replace(/```json|```/g, "").trim();
+  const s = txt.indexOf("["), e = txt.lastIndexOf("]");
+  if (s >= 0 && e >= 0) txt = txt.slice(s, e + 1);
+  const arr = JSON.parse(txt);
+  return Array.isArray(arr) ? arr.map((x) => String(x).replace(/^["']|["']$/g, "")).slice(0, 4) : [];
+}
+
+// growth activity history across all days (most recent first)
+function growthHistory(days) {
+  const dates = Object.keys(days).sort().reverse();
+  const out = [];
+  for (const d of dates) {
+    for (const t of (days[d].tasks || [])) {
+      if (t.pillar === "growth" && !/^read:|^continue reading:/i.test(t.title)) out.push(t.title);
+    }
+  }
+  return [...new Set(out)];
+}
+
+/* ------------------------- AI: workout plan ------------------------ */
+async function buildWorkout(fitness, weekContext, dName) {
+  const ctx = weekContext.length
+    ? weekContext.map((w) => `${w.day}: ${w.title}`).join("; ")
+    : "nothing else physical planned this week yet";
+  const prompt = `Plan ONE workout for ${dName}.
+Person: ${fitness.level}. Goals: ${fitness.goals.join(", ")}. Available: ${fitness.equipment.join(", ")}. Target length: about ${fitness.session} minutes.
+Already planned physically THIS WEEK: ${ctx}.
+Plan today's session to COMPLEMENT the week: balance muscle groups across days, allow recovery, avoid repeating the same focus back-to-back, and ease intensity since they're rebuilding. Prefer their available equipment.
+Return ONLY valid JSON, no prose, no markdown fences:
+{"title":"short name","focus":"e.g. Push / Pull / Legs / Full-body","duration_min":30,"exercises":[{"name":"exercise","detail":"e.g. 3 x 8-10"}]}`;
+  let txt = await callClaude(prompt);
+  txt = txt.replace(/```json|```/g, "").trim();
+  const start = txt.indexOf("{"), end = txt.lastIndexOf("}");
+  if (start >= 0 && end >= 0) txt = txt.slice(start, end + 1);
+  return JSON.parse(txt);
+}
+
+/* --------------------------- AI: meals ----------------------------- */
+async function buildMeals(fp, target) {
+  const cal = target ? `Aim the day's total near ${target} kcal, spread sensibly across the meals.` : `Use sensible, balanced portions.`;
+  const prompt = `Plan a full day of meals for one person.
+Diet: ${fp.diet}. Cooking willingness: ${fp.cooking}. Priorities: ${(fp.focus || []).join(", ")}.
+Keep every meal realistic and matched to the cooking willingness — if they barely cook, use no-cook or assemble-only ideas (yoghurt, cottage cheese, tuna, eggs boiled ahead, overnight oats, sandwiches, wraps, canned beans, pre-cooked items). Favour affordable, high-protein options.
+${cal}
+Give breakfast, lunch, dinner, and one snack. Include a rough kcal estimate per meal.
+Return ONLY valid JSON, no prose, no fences:
+{"meals":[{"slot":"Breakfast","name":"short description","kcal":450}]}`;
+  let txt = await callClaude(prompt);
+  txt = txt.replace(/```json|```/g, "").trim();
+  const s = txt.indexOf("{"), e = txt.lastIndexOf("}");
+  if (s >= 0 && e >= 0) txt = txt.slice(s, e + 1);
+  const obj = JSON.parse(txt);
+  return Array.isArray(obj.meals) ? obj.meals : [];
+}
+function tdeeOf(profile) {
+  const { sex = "m", age, height, weight, activity = 1.375 } = profile || {};
+  if (!(age && height && weight)) return null;
+  const bmr = sex === "m" ? 10 * weight + 6.25 * height - 5 * age + 5 : 10 * weight + 6.25 * height - 5 * age - 161;
+  return Math.round(bmr * Number(activity));
+}
+const taskDone = (t) => (t.subtasks && t.subtasks.length ? t.subtasks.every((s) => s.done) : t.done);
+const dayComplete = (day) => { if (!day) return true; if (!day.tasks || day.tasks.length === 0) return true; return day.tasks.every(taskDone); };
+function computeStreak(days) {
+  let streak = 0, cursor = todayISO();
+  for (let i = 0; i < 400; i++) {
+    const day = days[cursor];
+    const hasTasks = day && day.tasks && day.tasks.length > 0;
+    if (cursor === todayISO()) { if (hasTasks && dayComplete(day)) streak++; else if (hasTasks) break; }
+    else { if (dayComplete(day)) { if (hasTasks) streak++; } else break; }
+    cursor = addDays(cursor, -1);
+  }
+  return streak;
+}
+// physical sessions across the week containing `dateStr`
+function weekPhysical(days, dateStr, excludeDate) {
+  const out = [];
+  for (const d of weekOf(dateStr)) {
+    if (d === excludeDate) continue;
+    const day = days[d];
+    if (!day) continue;
+    for (const t of (day.tasks || [])) {
+      const physical = t.pillar === "health" && /workout|swim|run|gym|ride|cycl|lift|training|leg|push|pull|cardio|walk|yoga|mobility/i.test(t.title);
+      if (physical) out.push({ day: dayName(d), title: t.title });
+    }
+  }
+  return out;
+}
+
+/* ------------------------------ Root ------------------------------- */
+function App() {
+  const [state, setState] = useState(null);
+  const [tab, setTab] = useState("today");
+  const [showSettings, setShowSettings] = useState(false);
+  useEffect(() => { loadState().then((s) => setState(normalize(s))); }, []);
+  useEffect(() => { if (state) saveState(state); }, [state]);
+  const update = useCallback((fn) => setState((prev) => { const n = structuredClone(prev); fn(n); return n; }), []);
+
+  if (!state) return (<div className="ra-root ra-center"><Styles /><Loader2 className="spin" size={28} color="#9A9DB8" /></div>);
+  const streak = computeStreak(state.days);
+
+  return (
+    <div className="ra-root">
+      <Styles />
+      <header className="ra-top">
+        <div className="ra-brand"><Moon size={17} color="#A78BE0" /><span>Fivefold</span></div>
+        <div className="ra-topright">
+          <div className="ra-streak"><Flame size={16} color={streak > 0 ? "#EC7A93" : "#4A4C6B"} /><span className="mono">{streak}</span></div>
+          <button className="ra-gear" onClick={() => setShowSettings(true)} aria-label="Settings"><Settings size={18} /></button>
+        </div>
+      </header>
+      <main className="ra-main">
+        {tab === "today" && <Today state={state} update={update} />}
+        {tab === "week" && <Week state={state} update={update} />}
+        {tab === "food" && <Food state={state} update={update} />}
+        {tab === "you" && <You state={state} update={update} streak={streak} onOpenSettings={() => setShowSettings(true)} />}
+      </main>
+      <nav className="ra-nav">
+        {[["today","Today",Sparkles],["week","Week",Calendar],["food","Food",Utensils],["you","You",User]].map(([id,label,Ic]) => (
+          <button key={id} className={"ra-navbtn" + (tab === id ? " on" : "")} onClick={() => setTab(id)}><Ic size={20} /><span>{label}</span></button>
+        ))}
+      </nav>
+      {showSettings && <SettingsSheet state={state} update={update} onClose={() => setShowSettings(false)} />}
+    </div>
+  );
+}
+
+function SettingsSheet({ state, update, onClose }) {
+  return (
+    <div className="ra-sheet-wrap" onClick={onClose}>
+      <div className="ra-sheet" onClick={(e) => e.stopPropagation()}>
+        <div className="ra-sheet-top">
+          <div className="ra-sheet-title">Your variables</div>
+          <button className="ra-ghost" onClick={onClose}><X size={20} /></button>
+        </div>
+        <p className="ra-dim ra-small" style={{ marginBottom: 14 }}>Set once and forget — everything here quietly powers your targets, meals, and workouts.</p>
+        <AISettingsCard />
+        <CalorieCard state={state} update={update} />
+        <FitnessCard state={state} update={update} />
+        <FoodProfileCard state={state} update={update} />
+        <EventInterestsCard state={state} update={update} />
+      </div>
+    </div>
+  );
+}
+
+function EventInterestsCard({ state, update }) {
+  const ALL = ["Gallery exhibitions", "Markets", "Artist markets", "Underground / small gigs", "Park & outdoor events", "Open-air cinema", "Flea & vintage markets", "Record & zine fairs", "Poetry & spoken word", "Craft & making workshops", "Arthouse screenings", "Listening bars / experimental", "Street food nights"];
+  const sel = state.profile.eventInterests || [];
+  const customs = sel.filter((x) => !ALL.includes(x));
+  const [draft, setDraft] = useState("");
+  const toggle = (v) => update((s) => { const cur = s.profile.eventInterests || []; s.profile.eventInterests = cur.includes(v) ? cur.filter((x) => x !== v) : [...cur, v]; });
+  const addCustom = () => { const v = draft.trim(); if (!v) return; update((s) => { const cur = s.profile.eventInterests || []; if (!cur.some((x) => x.toLowerCase() === v.toLowerCase())) s.profile.eventInterests = [...cur, v]; }); setDraft(""); };
+  return (
+    <div className="ra-card" style={{ borderTopColor: "#EC7A93" }}>
+      <div className="ra-card-h"><Users size={16} color="#EC7A93" /> Event interests</div>
+      <p className="ra-dim ra-small" style={{ marginBottom: 10 }}>What events show up. Searches always stay budget-friendly and skip big crowds.</p>
+      <div className="ra-chipwrap">
+        {ALL.map((g) => (<button key={g} className={"ra-mini pink" + (sel.includes(g) ? " on" : "")} onClick={() => toggle(g)}>{g}</button>))}
+        {customs.map((g) => (<button key={g} className="ra-mini pink on" onClick={() => toggle(g)} title="Remove">{g} ×</button>))}
+      </div>
+      <div className="ra-inputrow" style={{ marginTop: 10 }}>
+        <input className="ra-input sm" placeholder="Add your own — e.g. techno, ceramics" value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addCustom()} />
+        <button className="ra-suggest" onClick={addCustom} style={{ color: "#EC7A93", borderColor: "#EC7A93" }}><Plus size={15} /></button>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------ TODAY ------------------------------ */
+function TaskEditor({ task, onSave, onCancel }) {
+  const [title, setTitle] = useState(task.title);
+  const [time, setTime] = useState(task.time || "");
+  return (
+    <div className="ra-editrow">
+      <input className="ra-input sm" value={title} onChange={(e) => setTitle(e.target.value)} autoFocus />
+      <div className="ra-editctrl">
+        <div className="ra-timepick"><Clock size={14} color="#9A9DB8" /><input className="ra-input tiny" type="time" value={time} onChange={(e) => setTime(e.target.value)} /></div>
+        <button className="ra-book-btn on" onClick={() => onSave({ title: title.trim() || task.title, time })}>Save</button>
+        <button className="ra-ghost sm" onClick={onCancel}><X size={16} /></button>
+      </div>
+    </div>
+  );
+}
+
+function Today({ state, update }) {
+  const t = todayISO();
+  const day = state.days[t] || { tasks: [], light: false };
+  const tasks = [...(day.tasks || [])].sort((a, b) => (a.time || "99:99").localeCompare(b.time || "99:99"));
+  const doneCount = tasks.filter(taskDone).length;
+  const allDone = tasks.length > 0 && doneCount === tasks.length;
+  const pct = tasks.length ? Math.round((doneCount / tasks.length) * 100) : 0;
+
+  const toggleTask = (id) => update((s) => { const dd = s.days[t]; const task = dd?.tasks.find((x) => x.id === id); if (task && (!task.subtasks || !task.subtasks.length)) task.done = !task.done; });
+  const toggleSub = (id, sid) => update((s) => { const dd = s.days[t]; const task = dd?.tasks.find((x) => x.id === id); const sub = task?.subtasks.find((x) => x.id === sid); if (sub) sub.done = !sub.done; });
+  const removeTask = (id) => update((s) => { const dd = s.days[t]; if (dd) dd.tasks = dd.tasks.filter((x) => x.id !== id); });
+  const editTask = (id, patch) => update((s) => { const dd = s.days[t]; const task = dd?.tasks.find((x) => x.id === id); if (task) Object.assign(task, patch); });
+  const [editId, setEditId] = useState(null);
+
+  return (
+    <div className="ra-view">
+      <p className="ra-eyebrow">{day.light ? "Light day" : "Today"}</p>
+      <h1 className="ra-h1">{prettyDate(t)}</h1>
+      <div className="ra-progress"><div className="ra-bar"><div className="ra-fill" style={{ width: pct + "%" }} /></div><span className="mono ra-pct">{doneCount}/{tasks.length}</span></div>
+
+      {tasks.length === 0 ? (
+        <div className="ra-empty"><p>{day.light ? "A light day — nothing planned. Rest counts." : "Nothing scheduled yet."}</p><p className="ra-dim">Open the Week tab to build your day.</p></div>
+      ) : (
+        <div className="ra-timeline">
+          {tasks.map((task) => (
+            <div key={task.id} className="ra-tl-row">
+              <div className="ra-tl-time"><span className="mono">{task.time || "—"}</span></div>
+              <div className="ra-tl-dot" style={{ background: PILLARS[task.pillar].color }} />
+              <div className="ra-tl-task">
+                {editId === task.id ? (
+                  <TaskEditor task={task} onSave={(patch) => { editTask(task.id, patch); setEditId(null); }} onCancel={() => setEditId(null)} />
+                ) : (
+                  <>
+                    <TaskCard task={task} onToggle={() => toggleTask(task.id)} onToggleSub={(sid) => toggleSub(task.id, sid)} />
+                    <div className="ra-tl-btns">
+                      <button className="ra-tl-del" onClick={() => setEditId(task.id)} aria-label="Edit task"><Pencil size={14} /></button>
+                      <button className="ra-tl-del" onClick={() => removeTask(task.id)} aria-label="Delete task"><Trash2 size={14} /></button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      <RewardCard allDone={allDone} empty={tasks.length === 0} />
+    </div>
+  );
+}
+
+function TaskCard({ task, onToggle, onToggleSub }) {
+  const p = PILLARS[task.pillar];
+  const composite = task.subtasks && task.subtasks.length > 0;
+  const done = taskDone(task);
+  return (
+    <div className="ra-task" style={{ borderLeftColor: p.color, opacity: done ? 0.55 : 1 }}>
+      <div className="ra-task-head" onClick={composite ? undefined : onToggle} style={{ cursor: composite ? "default" : "pointer" }}>
+        {!composite && (<span className="ra-check" style={{ background: done ? p.color : "transparent", borderColor: p.color }}>{done && <Check size={13} color="#16182B" strokeWidth={3} />}</span>)}
+        <div className="ra-task-body">
+          <span className="ra-pilllabel" style={{ color: p.color }}><p.Icon size={12} /> {p.name}</span>
+          <span className={"ra-task-title" + (done ? " struck" : "")}>{task.title}</span>
+        </div>
+      </div>
+      {composite && (
+        <div className="ra-subs">
+          {task.subtasks.map((s) => (
+            <button key={s.id} className="ra-sub" onClick={() => onToggleSub(s.id)}>
+              <span className="ra-check sm" style={{ background: s.done ? p.color : "transparent", borderColor: p.color }}>{s.done && <Check size={11} color="#16182B" strokeWidth={3} />}</span>
+              <span className={s.done ? "struck" : ""}>{s.title}{s.detail ? <em className="ra-detail"> · {s.detail}</em> : null}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function RewardCard({ allDone, empty }) {
+  if (empty) return null;
+  return (
+    <div className={"ra-reward" + (allDone ? " open" : "")}>
+      {allDone ? <Unlock size={22} color="#E8B04B" /> : <Lock size={22} color="#4A4C6B" />}
+      <div><div className="ra-reward-title">{allDone ? "Reward unlocked" : "Reward locked"}</div><div className="ra-reward-sub">{allDone ? "The day is yours — game guilt-free." : "Finish today's schedule to earn your game time."}</div></div>
+      <Gamepad2 size={20} color={allDone ? "#E8B04B" : "#4A4C6B"} />
+    </div>
+  );
+}
+
+/* ------------------------------ WEEK ------------------------------- */
+const WEEK_GOAL = 3;
+function weekPillarProgress(days, anchor) {
+  const prog = {}; PILLAR_KEYS.forEach((k) => (prog[k] = { done: 0, total: 0 }));
+  for (const d of weekOf(anchor)) {
+    const day = days[d]; if (!day) continue;
+    for (const t of (day.tasks || [])) {
+      if (!prog[t.pillar]) continue;
+      prog[t.pillar].total++;
+      if (taskDone(t)) prog[t.pillar].done++;
+    }
+  }
+  return prog;
+}
+
+function WeeklyGoal({ prog }) {
+  const met = PILLAR_KEYS.filter((k) => prog[k].done >= WEEK_GOAL).length;
+  return (
+    <div className="ra-goal">
+      <div className="ra-goal-h"><span>Weekly goal · {WEEK_GOAL} per pillar</span><span className="mono ra-goal-met">{met}/5</span></div>
+      <div className="ra-goal-rows">
+        {PILLAR_KEYS.map((k) => {
+          const p = PILLARS[k]; const { done, total } = prog[k];
+          const hit = done >= WEEK_GOAL;
+          const donePct = Math.min(100, (done / WEEK_GOAL) * 100);
+          const schedPct = Math.min(100, (total / WEEK_GOAL) * 100);
+          return (
+            <div key={k} className="ra-goal-row">
+              <span className="ra-goal-name" style={{ color: p.color }}><p.Icon size={13} /> {p.name}</span>
+              <div className="ra-goal-bar">
+                <div className="ra-goal-sched" style={{ width: schedPct + "%", background: p.color }} />
+                <div className="ra-goal-fill" style={{ width: donePct + "%", background: p.color }} />
+              </div>
+              <span className={"ra-goal-count mono" + (hit ? " met" : "")}>{done}/{WEEK_GOAL}{hit ? " ✓" : ""}</span>
+            </div>
+          );
+        })}
+      </div>
+      {met === 5 && <div className="ra-goal-done">All five pillars hit — full week ✦</div>}
+    </div>
+  );
+}
+
+function Week({ state, update }) {
+  const [anchor, setAnchor] = useState(todayISO());
+  const [editing, setEditing] = useState(null);
+  const days = weekOf(anchor);
+  const toggleLight = (d) => update((s) => { if (!s.days[d]) s.days[d] = { tasks: [], light: false }; s.days[d].light = !s.days[d].light; });
+
+  return (
+    <div className="ra-view">
+      <p className="ra-eyebrow">Plan the week</p>
+      <WeeklyGoal prog={weekPillarProgress(state.days, anchor)} />
+      <div className="ra-weekhead">
+        <button className="ra-ghost" onClick={() => setAnchor(addDays(anchor, -7))}><ChevronLeft size={18} /></button>
+        <span className="ra-weekrange">{prettyDate(days[0]).replace(/,.*/, "")} – {prettyDate(days[6]).replace(/^[^,]*,\s*/, "")}</span>
+        <button className="ra-ghost" onClick={() => setAnchor(addDays(anchor, 7))}><ChevronRight size={18} /></button>
+      </div>
+      <div className="ra-daylist">
+        {days.map((d) => {
+          const day = state.days[d] || { tasks: [], light: false };
+          const n = (day.tasks || []).length; const isToday = d === todayISO(); const over = n > 3;
+          return (
+            <div key={d} className={"ra-daycard" + (isToday ? " today" : "")}>
+              <div className="ra-day-l">
+                <div className="ra-day-date"><span className="ra-dow">{dayName(d)}</span><span className="mono ra-dnum">{dayNum(d)}</span></div>
+                <div className="ra-day-mid">
+                  <div className="ra-day-dots">{(day.tasks || []).map((tk) => (<span key={tk.id} className="ra-dot" style={{ background: PILLARS[tk.pillar].color }} />))}{n === 0 && <span className="ra-dim ra-small">empty</span>}</div>
+                  <div className="ra-day-meta">{day.light && <span className="ra-tag">light</span>}<span className={"ra-small " + (over ? "ra-warn" : "ra-dim")}>{n} {over ? "· over 3" : n === 1 ? "task" : "tasks"}</span></div>
+                </div>
+              </div>
+              <div className="ra-day-actions">
+                <button className={"ra-lightbtn" + (day.light ? " on" : "")} onClick={() => toggleLight(d)}><Moon size={15} /></button>
+                <button className="ra-addbtn" onClick={() => setEditing(d)}><Plus size={16} /> Plan</button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      {editing && <DayPlanner date={editing} state={state} update={update} onClose={() => setEditing(null)} />}
+    </div>
+  );
+}
+
+/* -------------------------- Day planner ---------------------------- */
+function DayPlanner({ date, state, update, onClose }) {
+  const day = state.days[date] || { tasks: [], light: false };
+  const isPast = date < todayISO(); const isToday = date === todayISO();
+  const addTask = (task) => update((s) => { if (!s.days[date]) s.days[date] = { tasks: [], light: false }; s.days[date].tasks.push(task); });
+  const addTaskTo = (d, task) => update((s) => { if (!s.days[d]) s.days[d] = { tasks: [], light: false }; s.days[d].tasks.push(task); });
+  const removeTask = (id) => update((s) => { const dd = s.days[date]; if (dd) dd.tasks = dd.tasks.filter((x) => x.id !== id); });
+  const editTask = (id, patch) => update((s) => { const dd = s.days[date]; const task = dd?.tasks.find((x) => x.id === id); if (task) Object.assign(task, patch); });
+  const [editId, setEditId] = useState(null);
+  const sorted = [...(day.tasks || [])].sort((a, b) => (a.time || "99:99").localeCompare(b.time || "99:99"));
+
+  return (
+    <div className="ra-sheet-wrap" onClick={onClose}>
+      <div className="ra-sheet" onClick={(e) => e.stopPropagation()}>
+        <div className="ra-sheet-top">
+          <div><div className="ra-sheet-title">{prettyDate(date)}</div><div className="ra-dim ra-small">{isPast ? "Past day — locked" : isToday ? "Today — add or swap, finished work stays" : "Fully editable"}</div></div>
+          <button className="ra-ghost" onClick={onClose}><X size={20} /></button>
+        </div>
+        <div className="ra-sheet-tasks">
+          {sorted.map((tk) => {
+            const p = PILLARS[tk.pillar]; const lockRemove = isPast;
+            if (editId === tk.id && !isPast) {
+              return (
+                <div key={tk.id} className="ra-sheet-task" style={{ borderLeftColor: p.color }}>
+                  <TaskEditor task={tk} onSave={(patch) => { editTask(tk.id, patch); setEditId(null); }} onCancel={() => setEditId(null)} />
+                </div>
+              );
+            }
+            return (
+              <div key={tk.id} className="ra-sheet-task" style={{ borderLeftColor: p.color }}>
+                {tk.time && <span className="mono ra-tasktime">{tk.time}</span>}
+                <span className="ra-pilllabel" style={{ color: p.color }}><p.Icon size={12} /> {p.name}</span>
+                <span className="ra-sheet-tasktitle">{tk.title}</span>
+                {tk.subtasks?.length > 0 && <span className="ra-dim ra-small">{tk.subtasks.length} steps</span>}
+                {!lockRemove && <button className="ra-ghost sm" onClick={() => setEditId(tk.id)}><Pencil size={14} /></button>}
+                {!lockRemove && <button className="ra-ghost sm" onClick={() => removeTask(tk.id)}><Trash2 size={14} /></button>}
+              </div>
+            );
+          })}
+          {(day.tasks || []).length === 0 && <p className="ra-dim ra-small">No tasks yet. Aim for ~3.</p>}
+        </div>
+        {!isPast && <TaskComposer onAdd={addTask} addTaskTo={addTaskTo} count={(day.tasks || []).length} date={date} state={state} update={update} />}
+      </div>
+    </div>
+  );
+}
+
+/* --------------------------- Composer ------------------------------ */
+function TaskComposer({ onAdd, addTaskTo, count, date, state, update }) {
+  const [pillar, setPillar] = useState("creativity");
+  const [subtype, setSubtype] = useState("drawing");
+  const [title, setTitle] = useState("");
+  const [time, setTime] = useState("");
+  const [subs, setSubs] = useState([]);
+  const [subDraft, setSubDraft] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState("");
+  const [ideas, setIdeas] = useState([]);
+  const [bookSel, setBookSel] = useState(null);
+  const [events, setEvents] = useState(null);
+  const [evLoading, setEvLoading] = useState(false);
+  const [evErr, setEvErr] = useState("");
+  const [city, setCity] = useState(state.profile.city || "Prague");
+  const [company, setCompany] = useState(null);
+  const [evDay, setEvDay] = useState(date);
+  const [evEmpty, setEvEmpty] = useState(false);
+  const p = PILLARS[pillar];
+
+  const findEv = async () => {
+    setEvErr(""); setEvLoading(true); setEvents(null); setEvEmpty(false);
+    try {
+      const list = await findEvents(city || "Prague", state.profile.eventInterests);
+      setEvents(list);
+      if (update) update((s) => { s.profile.city = city || "Prague"; });
+      if (!list.length) { setEvEmpty(true); doSuggest(); }
+    }
+    catch { setEvErr("Couldn't fetch events — here are some alternatives instead."); setEvEmpty(true); doSuggest(); }
+    finally { setEvLoading(false); }
+  };
+
+  const doSuggest = async () => {
+    setErr(""); setLoading(true); setIdeas([]);
+    try {
+      const hist = pillar === "growth" ? growthHistory(state.days) : undefined;
+      const list = await suggestMany(pillar, pillar === "creativity" ? subtype : undefined, hist);
+      setIdeas(list);
+    }
+    catch { setErr("Couldn't reach suggestions — type one for now."); }
+    finally { setLoading(false); }
+  };
+  const addBook = (bookTitle, mode) => {
+    const label = (mode === "continue" ? "Continue reading: " : "Read: ") + bookTitle;
+    onAdd({ id: uid(), pillar: "growth", title: label, time, done: false, subtasks: [] });
+    reset();
+  };
+  const addSub = () => { if (!subDraft.trim()) return; setSubs([...subs, { id: uid(), title: subDraft.trim(), done: false }]); setSubDraft(""); };
+  const reset = () => { setTitle(""); setSubs([]); setSubDraft(""); setTime(""); setIdeas([]); setBookSel(null); setEvents(null); setCompany(null); setEvDay(date); setEvEmpty(false); };
+  const commit = () => {
+    if (!title.trim()) return;
+    let finalTitle = title.trim();
+    if (pillar === "socialising" && company) finalTitle += company === "friends" ? " · with friends" : " · solo";
+    const task = { id: uid(), pillar, title: finalTitle, time, done: false, subtasks: subs };
+    if (pillar === "socialising" && evDay && evDay !== date && addTaskTo) addTaskTo(evDay, task);
+    else onAdd(task);
+    reset();
+  };
+
+  // Health workout builder
+  const [wo, setWo] = useState(null); const [woLoading, setWoLoading] = useState(false); const [woErr, setWoErr] = useState("");
+  const genWorkout = async () => {
+    setWoErr(""); setWoLoading(true); setWo(null);
+    try {
+      const ctx = weekPhysical(state.days, date, date);
+      const plan = await buildWorkout(state.profile.fitness, ctx, dayName(date));
+      setWo(plan);
+    } catch { setWoErr("Couldn't build a workout just now — try again."); } finally { setWoLoading(false); }
+  };
+  const acceptWorkout = () => {
+    if (!wo) return;
+    onAdd({ id: uid(), pillar: "health", title: wo.title + (wo.focus ? ` (${wo.focus})` : ""), time, done: false,
+      subtasks: (wo.exercises || []).map((e) => ({ id: uid(), title: e.name, detail: e.detail || "", done: false })) });
+    setWo(null); reset();
+  };
+
+  return (
+    <div className="ra-composer">
+      <div className="ra-pillrow">
+        {PILLAR_KEYS.map((k) => { const pp = PILLARS[k]; return (
+          <button key={k} className={"ra-pillchip" + (pillar === k ? " on" : "")} onClick={() => { setPillar(k); setWo(null); setIdeas([]); setErr(""); setBookSel(null); setEvents(null); setCompany(null); setEvDay(date); setEvEmpty(false); }}
+            style={pillar === k ? { background: pp.color, borderColor: pp.color, color: "#16182B" } : { borderColor: pp.color, color: pp.color }}>
+            <pp.Icon size={13} /> {pp.name}
+          </button>); })}
+      </div>
+
+      {/* HEALTH: workout builder */}
+      {pillar === "health" && (
+        <div className="ra-wo">
+          <button className="ra-wo-gen" onClick={genWorkout} disabled={woLoading}>
+            {woLoading ? <Loader2 size={16} className="spin" /> : <Dumbbell size={16} />}
+            {woLoading ? "Planning around your week…" : "Build me a workout"}
+          </button>
+          <p className="ra-dim ra-small">Uses your profile + this week's training. Ease in — stop if something hurts.</p>
+          {woErr && <p className="ra-warn ra-small">{woErr}</p>}
+          {wo && (
+            <div className="ra-wo-card">
+              <div className="ra-wo-head"><strong>{wo.title}</strong>{wo.focus && <span className="ra-tag">{wo.focus}</span>}{wo.duration_min && <span className="ra-dim ra-small">~{wo.duration_min} min</span>}</div>
+              <div className="ra-wo-list">{(wo.exercises || []).map((e, i) => (<div key={i} className="ra-wo-ex"><span>{e.name}</span><span className="mono ra-dim ra-small">{e.detail}</span></div>))}</div>
+              <div className="ra-wo-actions">
+                <button className="ra-ghost-btn" onClick={genWorkout}><RefreshCw size={14} /> Regenerate</button>
+                <div className="ra-timepick"><Clock size={14} color="#9A9DB8" /><input className="ra-input tiny" type="time" value={time} onChange={(e) => setTime(e.target.value)} /></div>
+                <button className="ra-primary sm" style={{ background: "#4EC1A6" }} onClick={acceptWorkout}>Add to day</button>
+              </div>
+            </div>
+          )}
+          <div className="ra-or">or add a health task manually</div>
+        </div>
+      )}
+
+      {pillar === "creativity" && (<div className="ra-subtypes">{p.types.map((tp) => (<button key={tp} className={"ra-subtype" + (subtype === tp ? " on" : "")} onClick={() => { setSubtype(tp); setIdeas([]); }}>{tp}</button>))}</div>)}
+
+      {pillar === "growth" && (
+        <div className="ra-books">
+          <div className="ra-books-h"><BookOpen size={15} color="#5EA8E8" /> Read a book</div>
+          {(state.reading || []).length === 0 ? (
+            <p className="ra-dim ra-small">No books yet — add some in the You tab, then start or continue them here.</p>
+          ) : (
+            <>
+              <select className="ra-input sm" value={bookSel || ""} onChange={(e) => setBookSel(e.target.value || null)}>
+                <option value="">Choose a book…</option>
+                {(state.reading || []).map((b) => (<option key={b.id} value={b.id}>{b.title}{b.author ? ` · ${b.author}` : ""}</option>))}
+              </select>
+              {bookSel && (() => {
+                const book = (state.reading || []).find((x) => x.id === bookSel);
+                return book ? (
+                  <div className="ra-bookactions">
+                    <button className="ra-book-btn" onClick={() => addBook(book.title, "start")}>Start</button>
+                    <button className="ra-book-btn on" onClick={() => addBook(book.title, "continue")}>Continue</button>
+                  </div>
+                ) : null;
+              })()}
+            </>
+          )}
+          <div className="ra-or">or plan another growth task</div>
+        </div>
+      )}
+
+      {pillar === "socialising" && (
+        <div className="ra-books">
+          <div className="ra-books-h"><Users size={15} color="#EC7A93" /> Find events near you</div>
+          <p className="ra-dim ra-small">Tuned to your taste — budget-friendly, small & underground. Searches the coming weeks; pick a day for it below. Edit interests in Settings ⚙</p>
+          <div className="ra-inputrow">
+            <input className="ra-input sm" value={city} onChange={(e) => setCity(e.target.value)} placeholder="City" />
+            <button className="ra-book-btn on" style={{ background: "#EC7A93", borderColor: "#EC7A93", flex: "none", padding: "8px 14px" }} onClick={findEv} disabled={evLoading}>{evLoading ? <Loader2 size={14} className="spin" /> : "Search"}</button>
+          </div>
+          {evLoading && <p className="ra-dim ra-small">Searching the web for what's on…</p>}
+          {evErr && <p className="ra-warn ra-small">{evErr}</p>}
+          {events && events.length === 0 && <p className="ra-dim ra-small">No events matched your taste right now — I've generated some alternatives below instead.</p>}
+          {events && events.length > 0 && (
+            <div className="ra-idealist">
+              {events.map((ev, i) => {
+                const label = ev.name + (ev.venue ? ` @ ${ev.venue}` : "");
+                const sel = title === label;
+                return (
+                  <button key={i} className={"ra-idea" + (sel ? " on" : "")} onClick={() => setTitle(label)} style={sel ? { borderColor: "#EC7A93" } : {}}>
+                    <span className="ra-idea-check" style={{ borderColor: "#EC7A93", background: sel ? "#EC7A93" : "transparent" }}>{sel && <Check size={11} color="#16182B" strokeWidth={3} />}</span>
+                    <span><b>{ev.name}</b>{ev.date ? <em className="ra-author"> · {ev.date}</em> : null}{ev.price ? <em className="ra-pricetag"> · {ev.price}</em> : null}{ev.venue ? <span className="ra-dim ra-small"> — {ev.venue}</span> : null}{ev.desc ? <span className="ra-dim ra-small"><br />{ev.desc}</span> : null}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+          <div className="ra-or">or pick a generated idea below</div>
+        </div>
+      )}
+
+      {p.generatable && (
+        <div className="ra-ideas">
+          <button className="ra-ideas-btn" onClick={doSuggest} disabled={loading} style={{ borderColor: p.color, color: p.color }}>
+            {loading ? <Loader2 size={15} className="spin" /> : <Sparkles size={15} />}
+            {loading ? "Finding ideas…" : ideas.length ? "Show me others" : "Not sure? Pick from ideas"}
+          </button>
+          {ideas.length > 0 && (
+            <div className="ra-idealist">
+              {ideas.map((idea, i) => {
+                const sel = title === idea;
+                return (
+                  <button key={i} className={"ra-idea" + (sel ? " on" : "")} onClick={() => setTitle(idea)}
+                    style={sel ? { borderColor: p.color } : {}}>
+                    <span className="ra-idea-check" style={{ borderColor: p.color, background: sel ? p.color : "transparent" }}>{sel && <Check size={11} color="#16182B" strokeWidth={3} />}</span>
+                    <span>{idea}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      <div className="ra-inputrow">
+        <input className="ra-input" placeholder={p.generatable ? "…or write your own" : "What will you do?"} value={title} onChange={(e) => setTitle(e.target.value)} />
+      </div>
+      {err && <p className="ra-warn ra-small">{err}</p>}
+      {pillar === "socialising" && (
+        <div className="ra-companyrow">
+          <span className="ra-dim ra-small">Going:</span>
+          <button className={"ra-mini" + (company === "solo" ? " on" : "")} onClick={() => setCompany(company === "solo" ? null : "solo")}>Solo</button>
+          <button className={"ra-mini" + (company === "friends" ? " on" : "")} onClick={() => setCompany(company === "friends" ? null : "friends")}>With friends</button>
+          <span className="ra-dim ra-small" style={{ marginLeft: 6 }}>Day:</span>
+          <input className="ra-input tiny" type="date" min={todayISO()} value={evDay} onChange={(e) => setEvDay(e.target.value)} />
+        </div>
+      )}
+
+      {/* time + subtasks */}
+      <div className="ra-inputrow">
+        <div className="ra-timepick"><Clock size={15} color="#9A9DB8" /><input className="ra-input sm" type="time" value={time} onChange={(e) => setTime(e.target.value)} /><span className="ra-dim ra-small">when</span></div>
+      </div>
+      {subs.length > 0 && <div className="ra-sublist">{subs.map((s) => <span key={s.id} className="ra-subchip">{s.title}</span>)}</div>}
+      <div className="ra-inputrow">
+        <input className="ra-input sm" placeholder="Add a step (optional — makes it composite)" value={subDraft} onChange={(e) => setSubDraft(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addSub()} />
+        <button className="ra-suggest" onClick={addSub}><Plus size={15} /></button>
+      </div>
+      <button className="ra-primary" onClick={commit} disabled={!title.trim()} style={{ background: p.color }}>Add to day {count >= 3 && <span className="ra-overpill">over 3</span>}</button>
+    </div>
+  );
+}
+
+/* ------------------------------- YOU ------------------------------- */
+function You({ state, update, streak, onOpenSettings }) {
+  const done = Object.values(state.days).filter((d) => d.tasks?.length).filter(dayComplete).length;
+  return (
+    <div className="ra-view">
+      <p className="ra-eyebrow">You</p>
+      <h1 className="ra-h1">Your baseline</h1>
+      <div className="ra-statrow">
+        <div className="ra-stat"><Flame size={16} color="#EC7A93" /><span className="mono ra-statnum">{streak}</span><span className="ra-dim ra-small">day streak</span></div>
+        <div className="ra-stat"><Check size={16} color="#4EC1A6" /><span className="mono ra-statnum">{done}</span><span className="ra-dim ra-small">days done</span></div>
+        {weighInfo(state.profile).last && (<div className="ra-stat"><Scale size={16} color="#5EA8E8" /><span className="mono ra-statnum">{weighInfo(state.profile).last.kg}</span><span className="ra-dim ra-small">kg{weighInfo(state.profile).delta !== null ? ` · ${weighInfo(state.profile).delta > 0 ? "+" : ""}${weighInfo(state.profile).delta}` : ""}</span></div>)}
+      </div>
+      <ReadingCard state={state} update={update} />
+      <button className="ra-settings-link" onClick={() => onOpenSettings && onOpenSettings()}><Settings size={15} /> Stats, training & food preferences</button>
+    </div>
+  );
+}
+
+function FitnessCard({ state, update }) {
+  const f = state.profile.fitness;
+  const LEVELS = ["Beginner / just starting", "Intermediate / train sometimes", "Advanced / train regularly", "Getting back after a break"];
+  const GOALS = ["General health & energy", "Strength / muscle", "Endurance & cardio", "Mobility & flexibility"];
+  const EQUIP = ["Bodyweight", "Dumbbells / bands", "Pull-up & dip bars", "Full gym", "Pool", "Outdoors"];
+  const setF = (patch) => update((s) => { s.profile.fitness = { ...s.profile.fitness, ...patch }; });
+  const toggle = (arr, v) => (arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
+  return (
+    <div className="ra-card" style={{ borderTopColor: "#4EC1A6" }}>
+      <div className="ra-card-h"><Dumbbell size={16} color="#4EC1A6" /> Training profile</div>
+      <div className="ra-fieldlabel">Level</div>
+      <select className="ra-input sm" value={f.level} onChange={(e) => setF({ level: e.target.value })}>{LEVELS.map((l) => <option key={l}>{l}</option>)}</select>
+      <div className="ra-fieldlabel">Goals</div>
+      <div className="ra-chipwrap">{GOALS.map((g) => (<button key={g} className={"ra-mini" + (f.goals.includes(g) ? " on" : "")} onClick={() => setF({ goals: toggle(f.goals, g) })}>{g}</button>))}</div>
+      <div className="ra-fieldlabel">Equipment</div>
+      <div className="ra-chipwrap">{EQUIP.map((g) => (<button key={g} className={"ra-mini" + (f.equipment.includes(g) ? " on" : "")} onClick={() => setF({ equipment: toggle(f.equipment, g) })}>{g}</button>))}</div>
+      <div className="ra-fieldlabel">Session length: <span className="mono">{f.session} min</span></div>
+      <input type="range" min="15" max="75" step="5" value={f.session} onChange={(e) => setF({ session: +e.target.value })} className="ra-range" />
+    </div>
+  );
+}
+
+function CalorieCard({ state, update }) {
+  const pr = state.profile || {};
+  const set = (k, v) => update((s) => { s.profile = { ...s.profile, [k]: v }; });
+  const { sex = "m", age, height, weight, activity = 1.375 } = pr;
+  let tdee = null;
+  if (age && height && weight) { const bmr = sex === "m" ? 10 * weight + 6.25 * height - 5 * age + 5 : 10 * weight + 6.25 * height - 5 * age - 161; tdee = Math.round(bmr * Number(activity)); }
+  return (
+    <div className="ra-card" style={{ borderTopColor: "#4EC1A6" }}>
+      <div className="ra-card-h"><Heart size={16} color="#4EC1A6" /> Daily calorie target</div>
+      <div className="ra-formgrid">
+        <label className="ra-field"><span>Age</span><input className="ra-input sm" type="number" value={age || ""} onChange={(e) => set("age", +e.target.value)} /></label>
+        <label className="ra-field"><span>Height (cm)</span><input className="ra-input sm" type="number" value={height || ""} onChange={(e) => set("height", +e.target.value)} /></label>
+        <label className="ra-field"><span>Weight (kg)</span><input className="ra-input sm" type="number" value={weight || ""} onChange={(e) => set("weight", +e.target.value)} /></label>
+        <label className="ra-field"><span>Sex</span><select className="ra-input sm" value={sex} onChange={(e) => set("sex", e.target.value)}><option value="m">Male</option><option value="f">Female</option></select></label>
+      </div>
+      <div className="ra-fieldlabel">Activity</div>
+      <select className="ra-input sm" value={activity} onChange={(e) => set("activity", e.target.value)}><option value={1.2}>Sedentary</option><option value={1.375}>Light (1–3×/wk)</option><option value={1.55}>Moderate (3–5×/wk)</option><option value={1.725}>Active (6–7×/wk)</option></select>
+      {tdee ? (<div className="ra-tdee"><span className="mono ra-tdee-num">{tdee}</span><span className="ra-dim ra-small">kcal / day to maintain · aim balanced, not extreme</span></div>) : <p className="ra-dim ra-small">Fill the fields for your maintenance estimate.</p>}
+      {weight ? (<div className="ra-tdee" style={{ marginTop: 8 }}><span className="mono ra-tdee-num" style={{ fontSize: 20 }}>{Math.round(weight * (state.food?.profile?.proteinPerKg || 1.6))}g</span><span className="ra-dim ra-small">protein / day target (~{state.food?.profile?.proteinPerKg || 1.6}g per kg, for strength)</span></div>) : null}
+      <div className="ra-fieldlabel">Weigh-in reminder</div>
+      <select className="ra-input sm" value={pr.weighCadence || "weekly"} onChange={(e) => set("weighCadence", e.target.value)}><option value="weekly">Weekly</option><option value="biweekly">Every 2 weeks</option></select>
+      {(pr.weightLog || []).length > 1 && (
+        <div className="ra-weighhist">
+          {[...pr.weightLog].slice(-5).reverse().map((w, i) => (<div key={i} className="ra-weighrow"><span className="ra-dim ra-small">{w.date}</span><span className="mono ra-small">{w.kg} kg</span></div>))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+async function estimateKcal(desc) {
+  const t = await callClaude(`Estimate the calories in this food or meal: "${desc}". Assume a typical single serving if no amount is given. Reply with ONLY an integer number of kcal — no words, no units.`);
+  const n = parseInt((String(t).match(/\d+/) || [])[0], 10);
+  return Number.isFinite(n) ? n : 0;
+}
+
+async function regenMeal(fp, meal, others, dName) {
+  const focus = (fp.focus || []).join(", ") || "balanced";
+  const prompt = `Suggest ONE replacement for the "${meal.slot}" meal (around ${meal.time}) for ${dName}.
+Diet: ${fp.diet}. Cooking: ${fp.cooking}. Preferences: ${focus}.${fp.avoid ? ` Avoid: ${fp.avoid}.` : ""}
+Keep it roughly ${meal.kcal || 500} kcal and ${meal.protein || 25} g protein, matched to the time of day.
+It MUST be different from these meals already planned today: ${others.join("; ") || "none"}.
+Favour no-cook / minimal-prep, cheap, high-protein where it fits.
+Return ONLY valid JSON, no prose, no fences: {"name":"short meal","kcal":450,"protein":30,"note":"quick prep note"}`;
+  let txt = await callClaude(prompt);
+  txt = txt.replace(/```json|```/g, "").trim();
+  const s = txt.indexOf("{"), e = txt.lastIndexOf("}");
+  if (s >= 0 && e >= 0) txt = txt.slice(s, e + 1);
+  return JSON.parse(txt);
+}
+
+async function generateBookRecs(reading) {
+  const have = (reading || []).map((b) => b.title + (b.author ? ` by ${b.author}` : "")).join("; ");
+  const basis = have
+    ? `Based on what this person has read or is reading: ${have}. Recommend 4 books they'd likely enjoy next — build on the themes, authors, or genres, and do NOT repeat any book they already listed.`
+    : `Recommend 4 varied, well-regarded books as a strong starting reading list across a few genres.`;
+  const prompt = `${basis} Use only real, existing books. Return ONLY a JSON array, no prose, no markdown fences: [{"title":"book title","author":"author","why":"one short line on why it fits them"}]`;
+  let txt = await callClaude(prompt);
+  txt = txt.replace(/```json|```/g, "").trim();
+  const s = txt.indexOf("["), e = txt.lastIndexOf("]");
+  if (s >= 0 && e >= 0) txt = txt.slice(s, e + 1);
+  const arr = JSON.parse(txt);
+  return Array.isArray(arr) ? arr.slice(0, 4) : [];
+}
+
+async function generateMeals(fp, target, protein, dName) {
+  const focus = (fp.focus || []).join(", ") || "balanced";
+  const slots = (fp.mealTimes || []).map((m) => `${m.slot} at ${m.time}`).join(", ");
+  const prompt = `Plan a full day of eating for one person for ${dName}, split across these fixed meal slots: ${slots}.
+Diet: ${fp.diet}. Cooking willingness: ${fp.cooking}. Preferences: ${focus}.${fp.avoid ? ` Avoid: ${fp.avoid}.` : ""}
+${target ? `Total for the day: about ${target} kcal, sensibly distributed across the slots (lighter snack, larger main meals).` : ""}
+${protein ? `Hit roughly ${protein} g of protein across the day.` : ""}
+Given the cooking level, favour no-cook / minimal-prep, cheap, high-protein items where that fits. Give one meal per slot, matched to the time of day (breakfast foods in the morning, etc.).
+Return ONLY valid JSON, no prose, no fences — one object per slot in the SAME order:
+{"meals":[{"slot":"Breakfast","time":"08:00","name":"short meal","kcal":450,"protein":30,"note":"quick prep note"}]}`;
+  let txt = await callClaude(prompt);
+  txt = txt.replace(/```json|```/g, "").trim();
+  const s = txt.indexOf("{"), e = txt.lastIndexOf("}");
+  if (s >= 0 && e >= 0) txt = txt.slice(s, e + 1);
+  const obj = JSON.parse(txt);
+  return obj.meals || [];
+}
+
+function Food({ state, update }) {
+  const target = tdeeOf(state.profile);
+  const protein = proteinTargetOf(state.profile, state.food.profile);
+  return (
+    <div className="ra-view">
+      <div className="ra-pagehead">
+        <div><p className="ra-eyebrow">Food</p><h1 className="ra-h1">Eat well, simply</h1></div>
+        {(target || protein) && (
+          <div className="ra-targetchips">
+            {target ? <span className="ra-tchip">{target}<i>kcal</i></span> : null}
+            {protein ? <span className="ra-tchip">{protein}<i>g P</i></span> : null}
+          </div>
+        )}
+      </div>
+      <WeighInCard state={state} update={update} />
+      <MealPlan state={state} update={update} target={target} />
+      <FoodLog state={state} update={update} target={target} />
+    </div>
+  );
+}
+
+function FoodLog({ state, update, target }) {
+  const t = todayISO();
+  const log = state.food.log[t] || [];
+  const total = log.reduce((a, m) => a + (Number(m.kcal) || 0), 0);
+  const [name, setName] = useState("");
+  const [kcal, setKcal] = useState("");
+  const [estimating, setEstimating] = useState(false);
+  const add = async () => {
+    if (!name.trim()) return;
+    let k = Number(kcal) || 0;
+    if (!kcal) { setEstimating(true); try { k = await estimateKcal(name.trim()); } catch {} setEstimating(false); }
+    update((s) => { s.food.log[t] = s.food.log[t] || []; s.food.log[t].push({ id: uid(), name: name.trim(), kcal: k, slot: "" }); });
+    setName(""); setKcal("");
+  };
+  const estimate = async () => { if (!name.trim()) return; setEstimating(true); try { const k = await estimateKcal(name.trim()); setKcal(String(k)); } catch {} finally { setEstimating(false); } };
+  const remove = (id) => update((s) => { if (s.food.log[t]) s.food.log[t] = s.food.log[t].filter((x) => x.id !== id); });
+  let read = null;
+  if (target && total > 0) { const r = total / target; read = r < 0.8 ? { t: "light so far", c: "#5EA8E8" } : r <= 1.12 ? { t: "on track", c: "#4EC1A6" } : { t: "over maintenance", c: "#E8B04B" }; }
+  return (
+    <div className="ra-card" style={{ borderTopColor: "#4EC1A6" }}>
+      <div className="ra-card-h"><Check size={16} color="#4EC1A6" /> Today's food</div>
+      <div className="ra-foodtotal"><span className="mono ra-tdee-num">{total}</span><span className="ra-dim ra-small">{target ? `of ~${target} kcal` : "kcal logged"}{read ? " · " : ""}{read && <b style={{ color: read.c }}>{read.t}</b>}</span></div>
+      {target > 0 && <div className="ra-bar" style={{ marginBottom: 11 }}><div className="ra-fill" style={{ width: Math.min(100, (total / target) * 100) + "%", background: read ? read.c : "#4EC1A6" }} /></div>}
+      {log.map((m) => (<div key={m.id} className="ra-book"><span>{m.slot ? `${m.slot}: ` : ""}{m.name}</span><span className="mono ra-dim ra-small">{m.kcal}</span><button className="ra-ghost sm" onClick={() => remove(m.id)}><Trash2 size={13} /></button></div>))}
+      <div className="ra-inputrow" style={{ marginTop: 8 }}>
+        <input className="ra-input sm" placeholder="Log something you ate" value={name} onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && add()} />
+        <input className="ra-input tiny" style={{ width: 70 }} type="number" placeholder="kcal" value={kcal} onChange={(e) => setKcal(e.target.value)} onKeyDown={(e) => e.key === "Enter" && add()} />
+        <button className="ra-suggest" onClick={estimate} disabled={estimating || !name.trim()} title="Estimate calories" style={{ color: "#4EC1A6", borderColor: "#4EC1A6" }}>{estimating ? <Loader2 size={15} className="spin" /> : <Sparkles size={15} />}</button>
+        <button className="ra-suggest" onClick={add} disabled={estimating}><Plus size={15} /></button>
+      </div>
+      <p className="ra-dim ra-small">Leave kcal blank and it's estimated for you — an approximation, not a lab value.</p>
+    </div>
+  );
+}
+
+function WeighInCard({ state, update }) {
+  const info = weighInfo(state.profile);
+  const [kg, setKg] = useState("");
+  const log = (state.profile.weightLog || []);
+  const save = () => {
+    const v = parseFloat(kg); if (!v) return;
+    update((s) => {
+      s.profile.weightLog = [...(s.profile.weightLog || []).filter((w) => w.date !== todayISO()), { date: todayISO(), kg: v }];
+      s.profile.weight = v; // current weight drives kcal + protein targets, which drive meals + workouts
+    });
+    setKg("");
+  };
+  if (!info.due && info.last) {
+    return (
+      <div className="ra-weigh done">
+        <Scale size={16} color="#4EC1A6" />
+        <span className="ra-small">Last weigh-in <b>{info.last.kg} kg</b>{info.delta !== null ? <em className="ra-author"> · {info.delta > 0 ? "+" : ""}{info.delta} kg</em> : ""}</span>
+        <span className="ra-dim ra-small ra-weigh-next">next in {info.cadence - daysBetween(info.last.date, todayISO())}d</span>
+      </div>
+    );
+  }
+  return (
+    <div className="ra-weigh due">
+      <div className="ra-weigh-head"><Scale size={16} color="#E8B04B" /><span className="ra-small"><b>Time to weigh in</b> — {info.last ? `${daysBetween(info.last.date, todayISO())} days since last` : "no weigh-in yet"}</span></div>
+      <div className="ra-inputrow">
+        <input className="ra-input sm" type="number" step="0.1" placeholder="Weight (kg)" value={kg} onChange={(e) => setKg(e.target.value)} onKeyDown={(e) => e.key === "Enter" && save()} />
+        <button className="ra-primary sm" style={{ background: "#4EC1A6" }} onClick={save} disabled={!kg}>Log</button>
+      </div>
+      <p className="ra-dim ra-small">Updates your calorie & protein targets automatically — meals and workouts adjust with it. {log.length ? `${log.length} weigh-ins logged.` : ""}</p>
+    </div>
+  );
+}
+
+function MealPlan({ state, update, target }) {
+  const t = todayISO();
+  const protein = proteinTargetOf(state.profile, state.food.profile);
+  const plan = state.food.plan[t];
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState("");
+  const [regenId, setRegenId] = useState(null);
+  const gen = async () => {
+    setErr(""); setLoading(true);
+    try {
+      const meals = await generateMeals(state.food.profile, target, protein, dayName(t));
+      update((s) => { s.food.plan[t] = { meals: meals.map((m) => ({ id: uid(), slot: m.slot, time: m.time, name: m.name, kcal: Number(m.kcal) || 0, protein: Number(m.protein) || 0, note: m.note || "", loggedId: null })) }; });
+    } catch { setErr("Couldn't build the plan just now — try again."); }
+    finally { setLoading(false); }
+  };
+  const regenOne = async (m) => {
+    setRegenId(m.id);
+    try {
+      const others = plan.meals.filter((x) => x.id !== m.id).map((x) => x.name);
+      const nm = await regenMeal(state.food.profile, m, others, dayName(t));
+      update((s) => { const meal = s.food.plan[t].meals.find((x) => x.id === m.id); if (meal) { meal.name = nm.name || meal.name; meal.kcal = Number(nm.kcal) || meal.kcal; meal.protein = Number(nm.protein) || meal.protein; meal.note = nm.note || ""; } });
+    } catch {} finally { setRegenId(null); }
+  };
+  const toggleEaten = (id) => update((s) => {
+    const meal = s.food.plan[t].meals.find((x) => x.id === id); if (!meal) return;
+    if (meal.loggedId) { s.food.log[t] = (s.food.log[t] || []).filter((x) => x.id !== meal.loggedId); meal.loggedId = null; }
+    else { const lid = uid(); s.food.log[t] = s.food.log[t] || []; s.food.log[t].push({ id: lid, name: meal.name, kcal: meal.kcal || 0, slot: meal.slot }); meal.loggedId = lid; }
+  });
+  const now = nowHM();
+  return (
+    <div className="ra-card" style={{ borderTopColor: "#4EC1A6" }}>
+      <div className="ra-card-h"><Clock size={16} color="#4EC1A6" /> Today's meal plan</div>
+      <button className="ra-wo-gen" onClick={gen} disabled={loading}>{loading ? <Loader2 size={16} className="spin" /> : <Utensils size={16} />}{loading ? "Planning your meals…" : plan ? "Regenerate plan" : "Plan my meals"}</button>
+      <p className="ra-dim ra-small">Fixed meal times{target ? ` · ~${target} kcal` : ""}{protein ? ` · ~${protein}g protein` : ""}. Edit the times below.</p>
+      {err && <p className="ra-warn ra-small">{err}</p>}
+      {plan && (
+        <div className="ra-meals">
+          {plan.meals.map((m) => {
+            const eaten = !!m.loggedId;
+            const overdue = !eaten && m.time && m.time < now;
+            return (
+              <div key={m.id} className={"ra-mealslot" + (eaten ? " eaten" : overdue ? " due" : "")}>
+                <button className="ra-mealcheck" onClick={() => toggleEaten(m.id)} style={{ background: eaten ? "#4EC1A6" : "transparent", borderColor: "#4EC1A6" }}>{eaten && <Check size={13} color="#16182B" strokeWidth={3} />}</button>
+                <div className="ra-mealslot-body">
+                  <div className="ra-mealslot-top"><span className="mono ra-mealtime">{m.time}</span><span className="ra-meal-slot">{m.slot}</span>{overdue && <span className="ra-duetag">due</span>}</div>
+                  <span className={"ra-meal-name" + (eaten ? " struck" : "")}>{m.name}</span>
+                  {m.note && <span className="ra-dim ra-small">{m.note}</span>}
+                </div>
+                <div className="ra-meal-r"><span className="mono ra-dim ra-small">{m.kcal} kcal</span>{m.protein ? <span className="mono ra-dim ra-small">{m.protein}g P</span> : null}{!eaten && <button className="ra-regen" onClick={() => regenOne(m)} disabled={regenId === m.id} title="Regenerate just this meal">{regenId === m.id ? <Loader2 size={13} className="spin" /> : <RefreshCw size={13} />}</button>}</div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function FoodProfileCard({ state, update }) {
+  const fp = state.food.profile;
+  const DIETS = ["No restrictions", "Vegetarian", "Vegan", "Pescatarian"];
+  const COOK = ["Barely — mostly no-cook", "Quick & minimal", "Depends on the day", "Proper cooking is fine"];
+  const FOCUS = ["High-protein (for strength)", "Balanced & varied", "Cheap & simple", "Light & fresh"];
+  const setP = (patch) => update((s) => { s.food.profile = { ...s.food.profile, ...patch }; });
+  const toggle = (arr, v) => (arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
+  return (
+    <div className="ra-card" style={{ borderTopColor: "#4EC1A6" }}>
+      <div className="ra-card-h"><Utensils size={16} color="#4EC1A6" /> Food preferences</div>
+      <div className="ra-fieldlabel">Diet</div>
+      <select className="ra-input sm" value={fp.diet} onChange={(e) => setP({ diet: e.target.value })}>{DIETS.map((d) => <option key={d}>{d}</option>)}</select>
+      <div className="ra-fieldlabel">Cooking</div>
+      <select className="ra-input sm" value={fp.cooking} onChange={(e) => setP({ cooking: e.target.value })}>{COOK.map((d) => <option key={d}>{d}</option>)}</select>
+      <div className="ra-fieldlabel">Focus</div>
+      <div className="ra-chipwrap">{FOCUS.map((g) => (<button key={g} className={"ra-mini" + ((fp.focus || []).includes(g) ? " on" : "")} onClick={() => setP({ focus: toggle(fp.focus || [], g) })}>{g}</button>))}</div>
+      <div className="ra-fieldlabel">Avoid (allergies, dislikes)</div>
+      <input className="ra-input sm" placeholder="e.g. mushrooms, shellfish" value={fp.avoid || ""} onChange={(e) => setP({ avoid: e.target.value })} />
+      <div className="ra-fieldlabel">Meal times (your fixed eating schedule)</div>
+      <div className="ra-mealtimes">
+        {[...(fp.mealTimes || [])].sort((a, b) => (a.time || "").localeCompare(b.time || "")).map((mt) => {
+          const i = (fp.mealTimes || []).indexOf(mt);
+          return (
+            <div key={i} className="ra-mealtime">
+              <input className="ra-input sm" value={mt.slot} onChange={(e) => { const arr = [...fp.mealTimes]; arr[i] = { ...arr[i], slot: e.target.value }; setP({ mealTimes: arr }); }} />
+              <input className="ra-input tiny" type="time" value={mt.time} onChange={(e) => { const arr = [...fp.mealTimes]; arr[i] = { ...arr[i], time: e.target.value }; arr.sort((a, b) => (a.time || "").localeCompare(b.time || "")); setP({ mealTimes: arr }); }} />
+              <button className="ra-ghost sm" onClick={() => setP({ mealTimes: fp.mealTimes.filter((_, j) => j !== i) })}><Trash2 size={14} /></button>
+            </div>
+          );
+        })}
+        <button className="ra-import-toggle" onClick={() => { const arr = [...(fp.mealTimes || []), { slot: "Meal", time: "10:00" }]; arr.sort((a, b) => (a.time || "").localeCompare(b.time || "")); setP({ mealTimes: arr }); }}>+ add a meal slot</button>
+      </div>
+    </div>
+  );
+}
+
+function ReadingCard({ state, update }) {
+  const [draft, setDraft] = useState("");
+  const [draftAuthor, setDraftAuthor] = useState("");
+  const [importing, setImporting] = useState(false);
+  const [bulk, setBulk] = useState("");
+  const reading = state.reading || [];
+  const add = () => { if (!draft.trim()) return; update((s) => { s.reading = [...(s.reading || []), { id: uid(), title: draft.trim(), author: draftAuthor.trim(), status: "reading" }]; }); setDraft(""); setDraftAuthor(""); };
+  const cycle = (id) => update((s) => { const b = s.reading.find((x) => x.id === id); if (b) b.status = b.status === "reading" ? "done" : b.status === "done" ? "queued" : "reading"; });
+  const remove = (id) => update((s) => { s.reading = s.reading.filter((x) => x.id !== id); });
+  const [editId, setEditId] = useState(null);
+  const [editVal, setEditVal] = useState("");
+  const [editAuthor, setEditAuthor] = useState("");
+  const [recs, setRecs] = useState(null);
+  const [recLoading, setRecLoading] = useState(false);
+  const [recErr, setRecErr] = useState("");
+  const [rtab, setRtab] = useState("reading");
+  const rename = (id) => { update((s) => { const b = s.reading.find((x) => x.id === id); if (b && editVal.trim()) { b.title = editVal.trim(); b.author = editAuthor.trim(); } }); setEditId(null); };
+  const recommend = async () => {
+    setRecErr(""); setRecLoading(true); setRecs(null);
+    try { setRecs(await generateBookRecs(reading)); } catch { setRecErr("Couldn't get recommendations — try again."); }
+    finally { setRecLoading(false); }
+  };
+  const addRec = (r) => update((s) => {
+    const cur = s.reading || [];
+    if (!cur.some((b) => b.title.toLowerCase() === (r.title || "").toLowerCase())) s.reading = [...cur, { id: uid(), title: r.title, author: r.author || "", status: "queued" }];
+  });
+  const doImport = () => {
+    // accepts plain titles (one per line) OR a Goodreads CSV export (grabs the Title column)
+    const lines = bulk.split("\n").map((l) => l.trim()).filter(Boolean);
+    const isCsv = /(^|,)"?title"?(,|$)/i.test(lines[0] || "");
+    const parseCsvRow = (row) => { const m = row.match(/("([^"]|"")*"|[^,]*)(,|$)/g) || []; return m.map((c) => c.replace(/,$/, "").replace(/^"|"$/g, "").replace(/""/g, '"').trim()); };
+    let books = [];
+    if (isCsv) {
+      const header = parseCsvRow(lines[0]).map((h) => h.toLowerCase());
+      const ti = header.indexOf("title");
+      const ai = header.indexOf("author");
+      books = lines.slice(1).map((r) => { const c = parseCsvRow(r); return { title: c[ti], author: ai >= 0 ? c[ai] : "" }; }).filter((b) => b.title);
+    } else { books = lines.map((t) => ({ title: t, author: "" })); }
+    if (books.length) update((s) => { s.reading = [...(s.reading || []), ...books.map((b) => ({ id: uid(), title: b.title, author: b.author, status: "queued" }))]; });
+    setBulk(""); setImporting(false);
+  };
+  const groups = { reading: reading.filter((b) => b.status === "reading"), queued: reading.filter((b) => b.status === "queued"), done: reading.filter((b) => b.status === "done") };
+  const bookRow = (b) => (editId === b.id ? (
+    <div key={b.id} className="ra-bookedit">
+      <input className="ra-input sm" value={editVal} autoFocus onChange={(e) => setEditVal(e.target.value)} onKeyDown={(e) => e.key === "Enter" && rename(b.id)} placeholder="Title" />
+      <div className="ra-inputrow">
+        <input className="ra-input sm" value={editAuthor} onChange={(e) => setEditAuthor(e.target.value)} onKeyDown={(e) => e.key === "Enter" && rename(b.id)} placeholder="Author" />
+        <button className="ra-book-btn on" onClick={() => rename(b.id)}>Save</button>
+        <button className="ra-ghost sm" onClick={() => setEditId(null)}><X size={14} /></button>
+      </div>
+    </div>
+  ) : (
+    <div key={b.id} className="ra-book">
+      <button className={"ra-status " + b.status} onClick={() => cycle(b.id)} title="Change status">{b.status === "queued" ? "want" : b.status}</button>
+      <span className={b.status === "done" ? "struck" : ""}>{b.title}{b.author ? <em className="ra-author"> · {b.author}</em> : null}</span>
+      <button className="ra-ghost sm" onClick={() => { setEditId(b.id); setEditVal(b.title); setEditAuthor(b.author || ""); }}><Pencil size={13} /></button>
+      <button className="ra-ghost sm" onClick={() => remove(b.id)}><Trash2 size={13} /></button>
+    </div>
+  ));
+  return (
+    <div className="ra-card" style={{ borderTopColor: "#5EA8E8" }}>
+      <div className="ra-card-h"><BookOpen size={16} color="#5EA8E8" /> Reading list</div>
+      <div className="ra-inputrow"><input className="ra-input sm" placeholder="Add a book" value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => e.key === "Enter" && add()} /><input className="ra-input sm ra-authorinput" placeholder="Author" value={draftAuthor} onChange={(e) => setDraftAuthor(e.target.value)} onKeyDown={(e) => e.key === "Enter" && add()} /><button className="ra-suggest" onClick={add}><Plus size={15} /></button></div>
+
+      <div className="ra-rtabs">
+        {[["reading", "Reading"], ["queued", "Want to read"], ["done", "Read"], ["recs", "Recs"]].map(([id, label]) => (
+          <button key={id} className={"ra-rtab" + (rtab === id ? " on" : "")} onClick={() => setRtab(id)}>{id === "recs" ? <Sparkles size={12} /> : null}{label}{id !== "recs" ? <span className="ra-rtab-n">{groups[id].length}</span> : null}</button>
+        ))}
+      </div>
+
+      {rtab !== "recs" ? (
+        <div className="ra-rlist">
+          {groups[rtab].length === 0 ? <p className="ra-dim ra-small">Nothing here yet.</p> : groups[rtab].map(bookRow)}
+          {rtab === "queued" && (!importing ? (
+            <button className="ra-import-toggle" onClick={() => setImporting(true)}>Import from Goodreads →</button>
+          ) : (
+            <div className="ra-import">
+              <p className="ra-dim ra-small">Goodreads has no live sync. Export your library (My Books → Import/Export) and paste the CSV — or paste titles, one per line.</p>
+              <textarea className="ra-textarea" rows={4} placeholder="Paste CSV or one title per line…" value={bulk} onChange={(e) => setBulk(e.target.value)} />
+              <div className="ra-inputrow"><button className="ra-ghost-btn" onClick={() => { setImporting(false); setBulk(""); }}>Cancel</button><button className="ra-primary sm" style={{ background: "#5EA8E8" }} onClick={doImport} disabled={!bulk.trim()}>Import</button></div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="ra-rlist">
+          <button className="ra-wo-gen" style={{ background: "#5EA8E8" }} onClick={recommend} disabled={recLoading}>{recLoading ? <Loader2 size={16} className="spin" /> : <Sparkles size={16} />}{recLoading ? "Finding books for you…" : recs ? "More recommendations" : "Recommend books for me"}</button>
+          <p className="ra-dim ra-small">{reading.length ? "Based on what you've read and are reading." : "Add a few books first for tailored picks — or get a starter set."}</p>
+          {recErr && <p className="ra-warn ra-small">{recErr}</p>}
+          {recs && recs.length > 0 && (
+            <div className="ra-meals" style={{ marginTop: 4 }}>
+              {recs.map((r, i) => {
+                const owned = reading.some((b) => b.title.toLowerCase() === (r.title || "").toLowerCase());
+                return (
+                  <div key={i} className="ra-meal">
+                    <div className="ra-meal-body"><span className="ra-meal-name"><b>{r.title}</b>{r.author ? <em className="ra-author"> · {r.author}</em> : null}</span>{r.why && <span className="ra-dim ra-small">{r.why}</span>}</div>
+                    <div className="ra-meal-r"><button className="ra-book-btn on" style={{ background: owned ? "transparent" : "#5EA8E8", color: owned ? "var(--dim)" : "#16182B", borderColor: "#5EA8E8" }} disabled={owned} onClick={() => addRec(r)}>{owned ? "Added" : "Add"}</button></div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ------------------------------ Styles ----------------------------- */
+function AISettingsCard() {
+  const cur = getAI();
+  const [key, setKey] = useState(cur.key || "");
+  const [saved, setSaved] = useState(false);
+  const save = () => { setAI({ provider: "gemini", key: key.trim() }); setSaved(true); setTimeout(() => setSaved(false), 1500); };
+  return (
+    <div className="ra-card" style={{ borderTopColor: "#A78BE0" }}>
+      <div className="ra-card-h"><Sparkles size={16} color="#A78BE0" /> AI key (for generators)</div>
+      <p className="ra-dim ra-small" style={{ marginBottom: 10 }}>The generate / suggest features use Google Gemini's free tier. Get a free key at aistudio.google.com (a Google account, no card), paste it here once. Everything else works without it.</p>
+      <div className="ra-fieldlabel">Provider</div>
+      <select className="ra-input sm" value="gemini" disabled><option value="gemini">Google Gemini — free tier</option></select>
+      <div className="ra-fieldlabel">API key</div>
+      <input className="ra-input sm" type="password" placeholder="Paste your Gemini API key" value={key} onChange={(e) => setKey(e.target.value)} />
+      <button className="ra-primary sm" style={{ background: "#A78BE0", marginTop: 10 }} onClick={save} disabled={!key.trim()}>{saved ? "Saved \u2713" : "Save key"}</button>
+      {cur.key ? <p className="ra-dim ra-small" style={{ marginTop: 8 }}>A key is saved on this device.</p> : null}
+    </div>
+  );
+}
+
+function Styles() {
+  return (<style>{`
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap');
+  * { box-sizing:border-box; margin:0; padding:0; }
+  .ra-root { --bg:#16182B; --surface:#20223C; --surface2:#282A48; --line:#33355C; --text:#E8E9F3; --dim:#9A9DB8; --faint:#4A4C6B;
+    font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; max-width:480px; margin:0 auto; display:flex; flex-direction:column; position:relative; overflow-x:hidden; }
+  .mono { font-family:'Space Mono',monospace; }
+  .ra-center { align-items:center; justify-content:center; }
+  .spin { animation:spin 1s linear infinite; } @keyframes spin { to { transform:rotate(360deg);} }
+  .ra-top { display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid var(--line); position:sticky; top:0; background:rgba(22,24,43,.9); backdrop-filter:blur(8px); z-index:5; }
+  .ra-brand { display:flex; align-items:center; gap:8px; font-family:'Space Grotesk'; font-weight:600; letter-spacing:.5px; }
+  .ra-streak { display:flex; align-items:center; gap:6px; font-weight:700; font-size:15px; background:var(--surface); padding:5px 11px; border-radius:20px; border:1px solid var(--line); }
+  .ra-topright { display:flex; align-items:center; gap:9px; }
+  .ra-gear { background:var(--surface); border:1px solid var(--line); color:var(--dim); width:32px; height:32px; border-radius:20px; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+  .ra-gear:hover { color:var(--text); }
+  .ra-pagehead { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
+  .ra-targetchips { display:flex; gap:7px; margin-top:6px; }
+  .ra-tchip { display:flex; flex-direction:column; align-items:center; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:6px 11px; font-family:'Space Mono',monospace; font-weight:700; font-size:15px; line-height:1.1; color:#4EC1A6; }
+  .ra-tchip i { font-style:normal; font-family:'Inter'; font-size:9px; color:var(--dim); font-weight:600; letter-spacing:.5px; }
+  .ra-weigh { border-radius:13px; padding:13px; margin:16px 0; border:1px solid var(--line); background:var(--surface); }
+  .ra-weigh.due { border-color:#E8B04B; background:linear-gradient(180deg,rgba(232,176,75,.1),var(--surface)); display:flex; flex-direction:column; gap:10px; }
+  .ra-weigh.done { display:flex; align-items:center; gap:9px; }
+  .ra-weigh-head { display:flex; align-items:center; gap:9px; }
+  .ra-weigh-next { margin-left:auto; }
+  .ra-weighhist { margin-top:10px; display:flex; flex-direction:column; gap:5px; }
+  .ra-weighrow { display:flex; justify-content:space-between; padding:5px 0; border-top:1px solid var(--line); }
+  .ra-settings-link { display:flex; align-items:center; gap:8px; width:100%; justify-content:center; background:var(--surface); border:1px solid var(--line); color:var(--dim); border-radius:12px; padding:13px; font-size:13px; font-weight:500; cursor:pointer; font-family:inherit; margin-top:2px; }
+  .ra-settings-link:hover { color:var(--text); border-color:var(--faint); }
+  .ra-main { flex:1; padding-bottom:78px; }
+  .ra-view { padding:22px 20px 30px; animation:rise .35s ease; }
+  @keyframes rise { from { opacity:0; transform:translateY(8px);} to { opacity:1; transform:none;} }
+  .ra-eyebrow { font-size:11px; letter-spacing:2.5px; text-transform:uppercase; color:var(--dim); font-weight:600; }
+  .ra-h1 { font-family:'Space Grotesk'; font-size:26px; font-weight:600; margin-top:5px; line-height:1.15; }
+  .ra-progress { display:flex; align-items:center; gap:11px; margin:20px 0 8px; }
+  .ra-bar { flex:1; height:7px; background:var(--surface2); border-radius:6px; overflow:hidden; }
+  .ra-fill { height:100%; background:linear-gradient(90deg,#A78BE0,#5EA8E8); border-radius:6px; transition:width .4s ease; }
+  .ra-pct { font-size:13px; color:var(--dim); }
+  /* timeline */
+  .ra-timeline { margin-top:16px; position:relative; }
+  .ra-tl-row { display:grid; grid-template-columns:46px 14px 1fr; align-items:start; gap:6px; margin-bottom:12px; }
+  .ra-tl-time { text-align:right; font-size:12px; color:var(--dim); padding-top:14px; }
+  .ra-tl-dot { width:11px; height:11px; border-radius:50%; margin-top:16px; box-shadow:0 0 0 4px var(--bg); z-index:1; }
+  .ra-task { background:var(--surface); border:1px solid var(--line); border-left-width:3px; border-radius:13px; padding:13px 15px; transition:opacity .25s; }
+  .ra-task-head { display:flex; align-items:flex-start; gap:12px; }
+  .ra-check { width:22px; height:22px; min-width:22px; border:2px solid; border-radius:7px; display:flex; align-items:center; justify-content:center; margin-top:1px; transition:background .15s; }
+  .ra-check.sm { width:18px; height:18px; min-width:18px; border-radius:5px; }
+  .ra-task-body { display:flex; flex-direction:column; gap:3px; }
+  .ra-pilllabel { display:inline-flex; align-items:center; gap:4px; font-size:10.5px; font-weight:600; letter-spacing:.6px; text-transform:uppercase; }
+  .ra-task-title { font-size:15px; line-height:1.35; }
+  .struck { text-decoration:line-through; color:var(--dim); }
+  .ra-detail { color:var(--dim); font-style:normal; font-size:12.5px; }
+  .ra-subs { display:flex; flex-direction:column; gap:7px; margin-top:11px; padding-left:2px; }
+  .ra-sub { display:flex; align-items:center; gap:9px; background:transparent; border:none; color:var(--text); font-size:13.5px; cursor:pointer; text-align:left; font-family:inherit; }
+  .ra-empty { text-align:center; padding:38px 10px; }
+  .ra-empty .ra-dim { margin-top:6px; }
+  .ra-dim { color:var(--dim); } .ra-small { font-size:12.5px; } .ra-warn { color:#EC7A93; }
+  .ra-reward { display:flex; align-items:center; gap:13px; margin-top:22px; padding:16px; border-radius:14px; background:var(--surface); border:1px dashed var(--faint); }
+  .ra-reward.open { border-style:solid; border-color:#E8B04B; background:linear-gradient(180deg,rgba(232,176,75,.13),var(--surface)); box-shadow:0 0 30px rgba(232,176,75,.14); }
+  .ra-reward > div { flex:1; } .ra-reward-title { font-family:'Space Grotesk'; font-weight:600; font-size:15px; } .ra-reward-sub { font-size:12.5px; color:var(--dim); margin-top:2px; }
+  /* weekly goal */
+  .ra-goal { background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:14px; margin-top:16px; }
+  .ra-goal-h { display:flex; justify-content:space-between; align-items:center; font-size:12.5px; font-weight:600; color:var(--dim); margin-bottom:11px; }
+  .ra-goal-met { font-size:13px; color:var(--text); }
+  .ra-goal-rows { display:flex; flex-direction:column; gap:9px; }
+  .ra-goal-row { display:grid; grid-template-columns:104px 1fr 42px; align-items:center; gap:9px; }
+  .ra-goal-name { display:inline-flex; align-items:center; gap:5px; font-size:11.5px; font-weight:600; }
+  .ra-goal-bar { position:relative; height:7px; background:var(--surface2); border-radius:6px; overflow:hidden; }
+  .ra-goal-sched { position:absolute; inset:0 auto 0 0; opacity:.28; border-radius:6px; transition:width .3s; }
+  .ra-goal-fill { position:absolute; inset:0 auto 0 0; border-radius:6px; transition:width .3s; }
+  .ra-goal-count { font-size:11.5px; color:var(--dim); text-align:right; }
+  .ra-goal-count.met { color:var(--text); }
+  .ra-goal-done { margin-top:11px; text-align:center; font-size:12.5px; font-weight:600; color:#E8B04B; letter-spacing:.3px; }
+  .ra-weekhead { display:flex; align-items:center; justify-content:space-between; margin:16px 0 14px; }
+  .ra-weekrange { font-size:13px; color:var(--dim); font-weight:500; }
+  .ra-ghost { background:transparent; border:none; color:var(--dim); cursor:pointer; display:flex; align-items:center; justify-content:center; padding:6px; border-radius:8px; }
+  .ra-ghost:hover { background:var(--surface); color:var(--text); } .ra-ghost.sm { padding:3px; }
+  .ra-daylist { display:flex; flex-direction:column; gap:9px; }
+  .ra-daycard { display:flex; align-items:center; justify-content:space-between; background:var(--surface); border:1px solid var(--line); border-radius:13px; padding:12px 13px; }
+  .ra-daycard.today { border-color:#A78BE0; }
+  .ra-day-l { display:flex; align-items:center; gap:13px; flex:1; min-width:0; }
+  .ra-day-date { display:flex; flex-direction:column; align-items:center; width:34px; }
+  .ra-dow { font-size:10.5px; text-transform:uppercase; letter-spacing:1px; color:var(--dim); }
+  .ra-dnum { font-size:17px; font-weight:700; }
+  .ra-day-mid { flex:1; min-width:0; display:flex; flex-direction:column; gap:5px; }
+  .ra-day-dots { display:flex; gap:5px; flex-wrap:wrap; align-items:center; min-height:9px; }
+  .ra-dot { width:9px; height:9px; border-radius:50%; }
+  .ra-day-meta { display:flex; align-items:center; gap:8px; }
+  .ra-tag { font-size:10px; text-transform:uppercase; letter-spacing:1px; color:#A78BE0; border:1px solid #A78BE0; padding:1px 6px; border-radius:6px; }
+  .ra-day-actions { display:flex; align-items:center; gap:7px; }
+  .ra-lightbtn { background:transparent; border:1px solid var(--line); color:var(--faint); width:32px; height:32px; border-radius:9px; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+  .ra-lightbtn.on { color:#A78BE0; border-color:#A78BE0; }
+  .ra-addbtn { display:flex; align-items:center; gap:5px; background:var(--surface2); border:1px solid var(--line); color:var(--text); font-size:13px; font-weight:500; padding:7px 12px; border-radius:9px; cursor:pointer; font-family:inherit; }
+  .ra-addbtn:hover { background:var(--line); }
+  .ra-sheet-wrap { position:fixed; inset:0; background:rgba(10,11,22,.6); backdrop-filter:blur(3px); display:flex; align-items:flex-end; justify-content:center; z-index:20; animation:fade .2s ease; }
+  @keyframes fade { from { opacity:0;} to { opacity:1;} }
+  .ra-sheet { background:var(--bg); border:1px solid var(--line); border-radius:22px 22px 0 0; width:100%; max-width:480px; max-height:90vh; overflow-y:auto; padding:20px; animation:slideup .28s cubic-bezier(.2,.8,.2,1); }
+  @keyframes slideup { from { transform:translateY(100%);} to { transform:none;} }
+  .ra-sheet-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px; }
+  .ra-sheet-title { font-family:'Space Grotesk'; font-size:18px; font-weight:600; }
+  .ra-sheet-tasks { display:flex; flex-direction:column; gap:8px; margin-bottom:14px; }
+  .ra-sheet-task { display:flex; align-items:center; gap:9px; flex-wrap:wrap; background:var(--surface); border:1px solid var(--line); border-left-width:3px; border-radius:11px; padding:10px 12px; }
+  .ra-tasktime { font-size:12px; color:var(--dim); }
+  .ra-sheet-tasktitle { flex:1; font-size:14px; min-width:110px; }
+  .ra-composer { border-top:1px solid var(--line); padding-top:16px; display:flex; flex-direction:column; gap:11px; }
+  .ra-pillrow { display:flex; flex-wrap:wrap; gap:7px; }
+  .ra-pillchip { display:flex; align-items:center; gap:5px; font-size:12px; font-weight:600; padding:6px 11px; border-radius:20px; border:1px solid; background:transparent; cursor:pointer; font-family:inherit; }
+  .ra-subtypes { display:flex; gap:7px; }
+  .ra-subtype { flex:1; font-size:12.5px; text-transform:capitalize; padding:7px; border-radius:9px; border:1px solid var(--line); background:var(--surface); color:var(--dim); cursor:pointer; font-family:inherit; }
+  .ra-subtype.on { border-color:#E8B04B; color:#E8B04B; }
+  .ra-inputrow { display:flex; gap:8px; align-items:center; }
+  .ra-input { flex:1; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:11px 13px; color:var(--text); font-size:14px; font-family:inherit; }
+  .ra-input.sm { padding:9px 11px; font-size:13px; } .ra-input.tiny { padding:6px 8px; font-size:12px; flex:none; width:112px; }
+  .ra-input:focus { outline:none; border-color:#A78BE0; }
+  .ra-suggest { width:44px; min-width:44px; height:42px; border:1px solid var(--line); background:var(--surface); border-radius:10px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--dim); }
+  .ra-timepick { display:flex; align-items:center; gap:7px; }
+  .ra-sublist { display:flex; flex-wrap:wrap; gap:6px; } .ra-subchip { font-size:12px; background:var(--surface2); border:1px solid var(--line); padding:4px 9px; border-radius:7px; }
+  .ra-primary { border:none; border-radius:11px; padding:13px; font-weight:600; font-size:14.5px; color:#16182B; cursor:pointer; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:8px; }
+  .ra-primary.sm { padding:9px 14px; font-size:13px; }
+  .ra-primary:disabled { opacity:.4; cursor:not-allowed; }
+  .ra-overpill { font-size:10px; background:rgba(22,24,43,.35); padding:2px 7px; border-radius:6px; text-transform:uppercase; letter-spacing:.5px; }
+  /* workout */
+  .ra-wo { display:flex; flex-direction:column; gap:9px; background:var(--surface); border:1px solid var(--line); border-radius:13px; padding:13px; }
+  .ra-wo-gen { display:flex; align-items:center; justify-content:center; gap:8px; background:#4EC1A6; color:#16182B; border:none; border-radius:10px; padding:12px; font-weight:600; font-size:14px; cursor:pointer; font-family:inherit; }
+  .ra-wo-gen:disabled { opacity:.7; }
+  .ra-wo-card { background:var(--bg); border:1px solid var(--line); border-radius:11px; padding:12px; }
+  .ra-wo-head { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:9px; font-size:15px; }
+  .ra-wo-head .ra-tag { color:#4EC1A6; border-color:#4EC1A6; }
+  .ra-wo-list { display:flex; flex-direction:column; gap:6px; margin-bottom:11px; }
+  .ra-wo-ex { display:flex; justify-content:space-between; gap:10px; font-size:13.5px; padding:5px 0; border-bottom:1px solid var(--line); }
+  .ra-wo-ex:last-child { border-bottom:none; }
+  .ra-wo-actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .ra-ghost-btn { display:flex; align-items:center; gap:5px; background:transparent; border:1px solid var(--line); color:var(--dim); border-radius:9px; padding:8px 10px; font-size:12.5px; cursor:pointer; font-family:inherit; }
+  .ra-or { text-align:center; font-size:11.5px; color:var(--faint); text-transform:uppercase; letter-spacing:1px; }
+  .ra-foodtotal { display:flex; align-items:baseline; gap:9px; margin-bottom:10px; }
+  .ra-meals { display:flex; flex-direction:column; gap:8px; margin-top:11px; }
+  .ra-meal { display:flex; align-items:center; justify-content:space-between; gap:10px; background:var(--bg); border:1px solid var(--line); border-radius:11px; padding:11px 12px; }
+  .ra-meal-body { display:flex; flex-direction:column; gap:2px; min-width:0; }
+  .ra-meal-slot { font-size:10px; text-transform:uppercase; letter-spacing:1px; color:#4EC1A6; font-weight:600; }
+  .ra-meal-name { font-size:13.5px; }
+  .ra-meal-r { display:flex; flex-direction:column; align-items:flex-end; gap:5px; min-width:64px; }
+  .ra-mealslot { display:flex; align-items:flex-start; gap:11px; background:var(--bg); border:1px solid var(--line); border-radius:11px; padding:11px 12px; }
+  .ra-regen { background:transparent; border:1px solid var(--line); color:var(--dim); border-radius:7px; padding:4px 6px; cursor:pointer; display:flex; align-items:center; justify-content:center; margin-top:2px; }
+  .ra-regen:hover { color:#4EC1A6; border-color:#4EC1A6; }
+  .ra-regen:disabled { opacity:.6; }
+  .ra-mealslot.eaten { opacity:.6; }
+  .ra-mealslot.due { border-color:#E8B04B; background:linear-gradient(180deg,rgba(232,176,75,.08),var(--bg)); }
+  .ra-mealcheck { width:24px; height:24px; min-width:24px; border:2px solid; border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer; margin-top:1px; background:transparent; }
+  .ra-mealslot-body { flex:1; display:flex; flex-direction:column; gap:2px; min-width:0; }
+  .ra-mealslot-top { display:flex; align-items:center; gap:8px; }
+  .ra-mealtime { font-size:12px; color:var(--text); font-weight:700; }
+  .ra-duetag { font-size:9.5px; text-transform:uppercase; letter-spacing:.8px; color:#E8B04B; border:1px solid #E8B04B; border-radius:5px; padding:1px 5px; font-weight:600; }
+  .ra-mealtimes { display:flex; flex-direction:column; gap:7px; }
+  .ra-mealtime-row { display:flex; gap:7px; }
+  .ra-mealtimes .ra-mealtime { display:flex; gap:7px; align-items:center; }
+  .ra-mealtimes .ra-input.sm { flex:1; }
+  .ra-ideas { display:flex; flex-direction:column; gap:9px; }
+  .ra-ideas-btn { display:flex; align-items:center; justify-content:center; gap:8px; background:transparent; border:1px solid; border-radius:10px; padding:11px; font-weight:600; font-size:13.5px; cursor:pointer; font-family:inherit; }
+  .ra-ideas-btn:disabled { opacity:.6; }
+  .ra-idealist { display:flex; flex-direction:column; gap:7px; }
+  .ra-idea { display:flex; align-items:flex-start; gap:10px; text-align:left; background:var(--surface); border:1px solid var(--line); border-radius:11px; padding:11px 13px; font-size:13.5px; color:var(--text); cursor:pointer; font-family:inherit; line-height:1.4; }
+  .ra-idea.on { background:var(--surface2); }
+  .ra-idea-check { width:18px; height:18px; min-width:18px; border:2px solid; border-radius:5px; display:flex; align-items:center; justify-content:center; margin-top:1px; }
+  .ra-companyrow { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .ra-companyrow .ra-mini.on { border-color:#EC7A93; color:#EC7A93; }
+  .ra-mini.pink.on { border-color:#EC7A93; color:#EC7A93; }
+  .ra-pricetag { font-style:normal; color:#4EC1A6; font-size:12px; }
+  .ra-rtabs { display:flex; gap:5px; margin:12px 0 4px; background:var(--surface2); padding:4px; border-radius:11px; }
+  .ra-rtab { flex:1; display:flex; align-items:center; justify-content:center; gap:4px; background:transparent; border:none; color:var(--dim); font-size:11.5px; font-weight:600; padding:7px 4px; border-radius:8px; cursor:pointer; font-family:inherit; }
+  .ra-rtab.on { background:var(--surface); color:#5EA8E8; }
+  .ra-rtab-n { font-size:10px; background:var(--bg); border-radius:6px; padding:0 5px; color:var(--dim); }
+  .ra-rtab.on .ra-rtab-n { color:#5EA8E8; }
+  .ra-rlist { display:flex; flex-direction:column; margin-top:6px; }
+  .ra-tl-task { display:flex; align-items:flex-start; gap:6px; }
+  .ra-tl-task > .ra-task { flex:1; }
+  .ra-tl-btns { display:flex; flex-direction:column; gap:2px; }
+  .ra-tl-del { background:transparent; border:none; color:var(--faint); cursor:pointer; padding:6px 4px; margin-top:4px; border-radius:7px; }
+  .ra-tl-del:hover { color:#EC7A93; background:var(--surface); }
+  .ra-editrow { flex:1; display:flex; flex-direction:column; gap:8px; background:var(--surface); border:1px solid #A78BE0; border-radius:11px; padding:11px; }
+  .ra-editctrl { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .ra-editctrl .ra-book-btn { flex:none; padding:8px 14px; }
+  .ra-books { display:flex; flex-direction:column; gap:9px; background:var(--surface); border:1px solid var(--line); border-radius:13px; padding:13px; }
+  .ra-books-h { display:flex; align-items:center; gap:7px; font-weight:600; font-size:13.5px; }
+  .ra-booklist { display:flex; flex-direction:column; gap:6px; }
+  .ra-bookrow { display:flex; flex-direction:column; gap:8px; background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:10px 12px; cursor:pointer; }
+  .ra-bookrow.on { border-color:#5EA8E8; }
+  .ra-bookrow-title { font-size:13.5px; }
+  .ra-bookactions { display:flex; gap:7px; }
+  .ra-book-btn { flex:1; font-size:12.5px; font-weight:600; padding:8px; border-radius:8px; border:1px solid #5EA8E8; background:transparent; color:#5EA8E8; cursor:pointer; font-family:inherit; }
+  .ra-book-btn.on { background:#5EA8E8; color:#16182B; }
+  .ra-import-toggle { background:transparent; border:none; color:#5EA8E8; font-size:12.5px; font-weight:600; cursor:pointer; text-align:left; padding:6px 0 0; font-family:inherit; }
+  .ra-import { display:flex; flex-direction:column; gap:9px; margin-top:6px; }
+  .ra-textarea { background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:10px; color:var(--text); font-size:13px; font-family:inherit; resize:vertical; }
+  .ra-textarea:focus { outline:none; border-color:#5EA8E8; }
+  /* you */
+  .ra-statrow { display:flex; gap:11px; margin:18px 0; }
+  .ra-stat { flex:1; background:var(--surface); border:1px solid var(--line); border-radius:13px; padding:14px; display:flex; flex-direction:column; gap:3px; }
+  .ra-statnum { font-size:24px; font-weight:700; }
+  .ra-card { background:var(--surface); border:1px solid var(--line); border-top-width:3px; border-radius:14px; padding:16px; margin-bottom:14px; }
+  .ra-card-h { display:flex; align-items:center; gap:8px; font-family:'Space Grotesk'; font-weight:600; font-size:15px; margin-bottom:13px; }
+  .ra-fieldlabel { font-size:12px; color:var(--dim); margin:10px 0 6px; }
+  .ra-chipwrap { display:flex; flex-wrap:wrap; gap:6px; }
+  .ra-mini { font-size:12px; padding:6px 10px; border-radius:8px; border:1px solid var(--line); background:var(--surface2); color:var(--dim); cursor:pointer; font-family:inherit; }
+  .ra-mini.on { border-color:#4EC1A6; color:#4EC1A6; }
+  .ra-range { width:100%; accent-color:#4EC1A6; }
+  .ra-formgrid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:6px; }
+  .ra-field { display:flex; flex-direction:column; gap:5px; font-size:12px; color:var(--dim); }
+  .ra-tdee { display:flex; align-items:baseline; gap:9px; background:var(--surface2); border-radius:11px; padding:13px; margin-top:10px; }
+  .ra-tdee-num { font-size:26px; font-weight:700; color:#4EC1A6; }
+  .ra-book { display:flex; align-items:center; gap:10px; padding:9px 0; border-top:1px solid var(--line); font-size:14px; }
+  .ra-book:first-of-type { border-top:none; }
+  .ra-status { font-size:11px; text-transform:uppercase; letter-spacing:.5px; padding:3px 9px; border-radius:7px; border:1px solid var(--line); background:var(--surface2); color:var(--dim); cursor:pointer; min-width:66px; }
+  .ra-status.reading { color:#5EA8E8; border-color:#5EA8E8; } .ra-status.done { color:#4EC1A6; border-color:#4EC1A6; }
+  .ra-book span { flex:1; }
+  .ra-author { font-style:normal; color:var(--dim); font-size:12.5px; }
+  .ra-authorinput { flex:none; width:38%; }
+  .ra-bookedit { display:flex; flex-direction:column; gap:8px; padding:9px 0; border-top:1px solid var(--line); }
+  .ra-bookedit:first-of-type { border-top:none; }
+  .ra-nav { position:fixed; bottom:0; left:0; right:0; max-width:480px; margin:0 auto; display:flex; background:rgba(22,24,43,.94); backdrop-filter:blur(12px); border-top:1px solid var(--line); padding:8px 0 max(8px,env(safe-area-inset-bottom)); }
+  .ra-navbtn { flex:1; background:transparent; border:none; color:var(--faint); display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10.5px; font-weight:600; letter-spacing:.4px; cursor:pointer; font-family:inherit; padding:4px; }
+  .ra-navbtn.on { color:#A78BE0; }
+  @media (prefers-reduced-motion:reduce) { * { animation:none !important; transition:none !important; } }
+  `}</style>);
+}
+
+
+
+const _root = ReactDOM.createRoot(document.getElementById("root"));
+_root.render(React.createElement(App));
+if ("serviceWorker" in navigator) { window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(function(){})); }
+</script>
+</body>
+</html>
