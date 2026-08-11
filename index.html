@@ -606,6 +606,10 @@ async function findEvents(city, interests, notes) {
   // Socialising planner fall back to AI-generated "things to do with people" ideas.
   return [];
 }
+function aiErr(err) {
+  if (err && err.code === "NO_KEY") return "Add your free Gemini key in Settings (the gear, top-right) to use generators.";
+  return "AI error — " + (err && err.message || String(err)) + " · check your key in Settings.";
+}
 async function suggestMany(pillarKey, subtype, history) {
   let prompt;
   if (pillarKey === "growth") {
@@ -1468,8 +1472,8 @@ function TaskComposer({
         setEvEmpty(true);
         doSuggest();
       }
-    } catch {
-      setEvErr("Couldn't fetch events — here are some alternatives instead.");
+    } catch (err) {
+      setEvErr(aiErr(err));
       setEvEmpty(true);
       doSuggest();
     } finally {
@@ -1484,8 +1488,8 @@ function TaskComposer({
       const hist = pillar === "growth" ? growthHistory(state.days) : undefined;
       const list = await suggestMany(pillar, pillar === "creativity" ? subtype : undefined, hist);
       setIdeas(list);
-    } catch {
-      setErr("Couldn't reach suggestions — type one for now.");
+    } catch (err) {
+      setErr(aiErr(err));
     } finally {
       setLoading(false);
     }
@@ -1551,8 +1555,8 @@ function TaskComposer({
       const ctx = weekPhysical(state.days, date, date);
       const plan = await buildWorkout(state.profile.fitness, ctx, dayName(date));
       setWo(plan);
-    } catch {
-      setWoErr("Couldn't build a workout just now — try again.");
+    } catch (err) {
+      setWoErr(aiErr(err));
     } finally {
       setWoLoading(false);
     }
@@ -1736,7 +1740,7 @@ function TaskComposer({
     className: "ra-warn ra-small"
   }, evErr), events && events.length === 0 && /*#__PURE__*/React.createElement("p", {
     className: "ra-dim ra-small"
-  }, "No events matched your taste right now — I've generated some alternatives below instead."), events && events.length > 0 && /*#__PURE__*/React.createElement("div", {
+  }, "Live event search isn't on in this version — generated ideas are below (they need your Gemini key)."), events && events.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "ra-idealist"
   }, events.map((ev, i) => {
     const label = ev.name + (ev.venue ? ` @ ${ev.venue}` : "");
@@ -2447,8 +2451,8 @@ function MealPlan({
           }))
         };
       });
-    } catch {
-      setErr("Couldn't build the plan just now — try again.");
+    } catch (err) {
+      setErr(aiErr(err));
     } finally {
       setLoading(false);
     }
@@ -2740,8 +2744,8 @@ function ReadingCard({
     setRecs(null);
     try {
       setRecs(await generateBookRecs(reading));
-    } catch {
-      setRecErr("Couldn't get recommendations — try again.");
+    } catch (err) {
+      setRecErr(aiErr(err));
     } finally {
       setRecLoading(false);
     }
@@ -3039,7 +3043,7 @@ function Styles() {
   .mono { font-family:'Space Mono',monospace; }
   .ra-center { align-items:center; justify-content:center; }
   .spin { animation:spin 1s linear infinite; } @keyframes spin { to { transform:rotate(360deg);} }
-  .ra-top { display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid var(--line); position:sticky; top:0; background:rgba(22,24,43,.9); backdrop-filter:blur(8px); z-index:5; }
+  .ra-top { display:flex; justify-content:space-between; align-items:center; padding:16px 20px; padding-top:calc(env(safe-area-inset-top, 0px) + 16px); border-bottom:1px solid var(--line); position:sticky; top:0; background:rgba(22,24,43,.92); backdrop-filter:blur(8px); z-index:5; }
   .ra-brand { display:flex; align-items:center; gap:8px; font-family:'Space Grotesk'; font-weight:600; letter-spacing:.5px; }
   .ra-streak { display:flex; align-items:center; gap:6px; font-weight:700; font-size:15px; background:var(--surface); padding:5px 11px; border-radius:20px; border:1px solid var(--line); }
   .ra-topright { display:flex; align-items:center; gap:9px; }
@@ -3058,7 +3062,7 @@ function Styles() {
   .ra-weighrow { display:flex; justify-content:space-between; padding:5px 0; border-top:1px solid var(--line); }
   .ra-settings-link { display:flex; align-items:center; gap:8px; width:100%; justify-content:center; background:var(--surface); border:1px solid var(--line); color:var(--dim); border-radius:12px; padding:13px; font-size:13px; font-weight:500; cursor:pointer; font-family:inherit; margin-top:2px; }
   .ra-settings-link:hover { color:var(--text); border-color:var(--faint); }
-  .ra-main { flex:1; padding-bottom:78px; }
+  .ra-main { flex:1; padding-bottom:calc(84px + env(safe-area-inset-bottom)); }
   .ra-view { padding:22px 20px 30px; animation:rise .35s ease; }
   @keyframes rise { from { opacity:0; transform:translateY(8px);} to { opacity:1; transform:none;} }
   .ra-eyebrow { font-size:11px; letter-spacing:2.5px; text-transform:uppercase; color:var(--dim); font-weight:600; }
@@ -3125,7 +3129,7 @@ function Styles() {
   .ra-addbtn:hover { background:var(--line); }
   .ra-sheet-wrap { position:fixed; inset:0; background:rgba(10,11,22,.6); backdrop-filter:blur(3px); display:flex; align-items:flex-end; justify-content:center; z-index:20; animation:fade .2s ease; }
   @keyframes fade { from { opacity:0;} to { opacity:1;} }
-  .ra-sheet { background:var(--bg); border:1px solid var(--line); border-radius:22px 22px 0 0; width:100%; max-width:480px; max-height:90vh; overflow-y:auto; padding:20px; animation:slideup .28s cubic-bezier(.2,.8,.2,1); }
+  .ra-sheet { background:var(--bg); border:1px solid var(--line); border-radius:22px 22px 0 0; width:100%; max-width:480px; max-height:90vh; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:20px; padding-bottom:calc(20px + env(safe-area-inset-bottom)); animation:slideup .28s cubic-bezier(.2,.8,.2,1); }
   @keyframes slideup { from { transform:translateY(100%);} to { transform:none;} }
   .ra-sheet-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px; }
   .ra-sheet-title { font-family:'Space Grotesk'; font-size:18px; font-weight:600; }
@@ -3140,7 +3144,7 @@ function Styles() {
   .ra-subtype { flex:1; font-size:12.5px; text-transform:capitalize; padding:7px; border-radius:9px; border:1px solid var(--line); background:var(--surface); color:var(--dim); cursor:pointer; font-family:inherit; }
   .ra-subtype.on { border-color:#E8B04B; color:#E8B04B; }
   .ra-inputrow { display:flex; gap:8px; align-items:center; }
-  .ra-input { flex:1; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:11px 13px; color:var(--text); font-size:14px; font-family:inherit; }
+  .ra-input { flex:1; min-width:0; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:11px 13px; color:var(--text); font-size:14px; font-family:inherit; }
   .ra-input.sm { padding:9px 11px; font-size:13px; } .ra-input.tiny { padding:6px 8px; font-size:12px; flex:none; width:112px; }
   .ra-input:focus { outline:none; border-color:#A78BE0; }
   .ra-suggest { width:44px; min-width:44px; height:42px; border:1px solid var(--line); background:var(--surface); border-radius:10px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--dim); }
@@ -3251,6 +3255,18 @@ function Styles() {
   .ra-navbtn { flex:1; background:transparent; border:none; color:var(--faint); display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10.5px; font-weight:600; letter-spacing:.4px; cursor:pointer; font-family:inherit; padding:4px; }
   .ra-navbtn.on { color:#A78BE0; }
   @media (prefers-reduced-motion:reduce) { * { animation:none !important; transition:none !important; } }
+
+  /* ---- iPhone / touch optimisation ---- */
+  html { -webkit-text-size-adjust:100%; }
+  body { overscroll-behavior-y:none; }
+  .ra-root { -webkit-tap-highlight-color:transparent; }
+  button, .ra-navbtn, .ra-pillchip, .ra-mini, .ra-idea, .ra-status, .ra-rtab { touch-action:manipulation; -webkit-user-select:none; user-select:none; }
+  /* 16px inputs stop iOS from auto-zooming when a field is focused */
+  input, select, textarea { font-size:16px; }
+  .ra-input, .ra-input.sm, .ra-input.tiny { font-size:16px; }
+  /* honour the notch on the sides for the main scroll views */
+  .ra-view { padding-left:calc(20px + env(safe-area-inset-left)); padding-right:calc(20px + env(safe-area-inset-right)); }
+  .ra-nav { padding-left:env(safe-area-inset-left); padding-right:env(safe-area-inset-right); }
   `);
 }
 try {
