@@ -1761,7 +1761,16 @@ function TaskComposer({
     className: "ra-tag"
   }, wo.focus), wo.duration_min && /*#__PURE__*/React.createElement("span", {
     className: "ra-dim ra-small"
-  }, "~", wo.duration_min, " min")), /*#__PURE__*/React.createElement("div", {
+  }, "~", wo.duration_min, " min"), /*#__PURE__*/React.createElement("button", {
+    className: "ra-res-x",
+    style: {
+      marginLeft: "auto"
+    },
+    onClick: () => setWo(null),
+    title: "Dismiss"
+  }, /*#__PURE__*/React.createElement(X, {
+    size: 14
+  }))), /*#__PURE__*/React.createElement("div", {
     className: "ra-wo-list"
   }, (wo.exercises || []).map((e, i) => /*#__PURE__*/React.createElement("div", {
     key: i,
@@ -1870,7 +1879,20 @@ function TaskComposer({
     className: "ra-dim ra-small"
   }, "Live event search isn't on in this version — generated ideas are below (they need your Gemini key)."), events && events.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "ra-idealist"
-  }, events.map((ev, i) => {
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ra-res-head"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "ra-dim ra-small"
+  }, events.length, " found"), /*#__PURE__*/React.createElement("button", {
+    className: "ra-res-x",
+    onClick: () => {
+      setEvents(null);
+      setEvEmpty(false);
+    },
+    title: "Close"
+  }, /*#__PURE__*/React.createElement(X, {
+    size: 14
+  }))), events.map((ev, i) => {
     const label = ev.name + (ev.venue ? ` @ ${ev.venue}` : "");
     const sel = title === label;
     return /*#__PURE__*/React.createElement("button", {
@@ -1918,7 +1940,17 @@ function TaskComposer({
     size: 15
   }), loading ? "Finding ideas…" : ideas.length ? "Show me others" : "Not sure? Pick from ideas"), ideas.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "ra-idealist"
-  }, ideas.map((idea, i) => {
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ra-res-head"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "ra-dim ra-small"
+  }, "Tap one, or dismiss"), /*#__PURE__*/React.createElement("button", {
+    className: "ra-res-x",
+    onClick: () => setIdeas([]),
+    title: "Close"
+  }, /*#__PURE__*/React.createElement(X, {
+    size: 14
+  }))), ideas.map((idea, i) => {
     const sel = title === idea;
     return /*#__PURE__*/React.createElement("button", {
       key: i,
@@ -2464,7 +2496,9 @@ function MealSlotRow({
     className: "ra-opts-head"
   }, /*#__PURE__*/React.createElement("span", {
     className: "ra-dim ra-small"
-  }, "Pick one to add it"), /*#__PURE__*/React.createElement("button", {
+  }, "Pick one to add it"), /*#__PURE__*/React.createElement("div", {
+    className: "ra-opts-head-r"
+  }, /*#__PURE__*/React.createElement("button", {
     className: "ra-slot-btn",
     onClick: getIdeas,
     disabled: loading
@@ -2473,7 +2507,13 @@ function MealSlotRow({
     className: "spin"
   }) : /*#__PURE__*/React.createElement(RefreshCw, {
     size: 12
-  }), " More")), opts.map((o, i) => /*#__PURE__*/React.createElement("button", {
+  }), " More"), /*#__PURE__*/React.createElement("button", {
+    className: "ra-res-x",
+    onClick: () => setOpts(null),
+    title: "Close"
+  }, /*#__PURE__*/React.createElement(X, {
+    size: 14
+  })))), opts.map((o, i) => /*#__PURE__*/React.createElement("button", {
     key: i,
     className: "ra-opt",
     onClick: () => {
@@ -3398,7 +3438,17 @@ function ReadingCard({
     style: {
       marginTop: 4
     }
-  }, recs.map((r, i) => {
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ra-res-head"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "ra-dim ra-small"
+  }, recs.length, " picks"), /*#__PURE__*/React.createElement("button", {
+    className: "ra-res-x",
+    onClick: () => setRecs(null),
+    title: "Close"
+  }, /*#__PURE__*/React.createElement(X, {
+    size: 14
+  }))), recs.map((r, i) => {
     const owned = reading.some(b => b.title.toLowerCase() === (r.title || "").toLowerCase());
     return /*#__PURE__*/React.createElement("div", {
       key: i,
@@ -3829,6 +3879,10 @@ function Styles() {
   .ra-opt-body { min-width:0; display:flex; flex-direction:column; gap:2px; }
   .ra-opt-name { font-size:13.5px; font-weight:600; color:var(--text); }
   .ra-opt-macros { text-align:right; line-height:1.25; flex:none; }
+  .ra-res-head { display:flex; align-items:center; justify-content:space-between; padding:2px 2px 6px; }
+  .ra-opts-head-r { display:flex; align-items:center; gap:8px; }
+  .ra-res-x { flex:none; background:var(--surface2); border:none; color:var(--dim); width:26px; height:26px; border-radius:999px; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; }
+  .ra-res-x:active { transform:scale(.9); }
   `);
 }
 try {
