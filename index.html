@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
-<meta name="theme-color" content="#141527" />
+<meta name="theme-color" content="#0C0C11" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest" />
 <link rel="apple-touch-icon" href="icon-180.png" />
 <title>Fivefold</title>
-<style>html,body{height:100%;margin:0;background:#141527}#root{min-height:100%}#boot{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;color:#9698B4;font-family:system-ui;font-size:14px}</style>
+<style>html,body{height:100%;margin:0;background:#0C0C11}#root{min-height:100%}#boot{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;color:#9A9AAE;font-family:system-ui;font-size:14px}</style>
 </head>
 <body>
 <div id="root"><div id="boot">Loading Fivefold…</div></div>
@@ -3104,7 +3104,7 @@ function Styles() {
   return /*#__PURE__*/React.createElement("style", null, `
   @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap');
   * { box-sizing:border-box; margin:0; padding:0; }
-  .ra-root { --bg:#141527; --surface:#1D1F35; --surface2:#262943; --line:#2A2C46; --text:#ECEDF5; --dim:#9698B4; --faint:#494B67;
+  .ra-root { --bg:#0C0C11; --surface:#16161E; --surface2:#1F1F29; --line:#23232E; --text:#F3F3F7; --dim:#9A9AAE; --faint:#5A5A72; --accent:#F0673E;
     font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; max-width:480px; margin:0 auto; display:flex; flex-direction:column; position:relative; overflow-x:hidden; }
   .mono { font-family:'Space Mono',monospace; }
   .ra-center { align-items:center; justify-content:center; }
@@ -3210,7 +3210,7 @@ function Styles() {
   .ra-subtype { flex:1; font-size:12.5px; text-transform:capitalize; padding:7px; border-radius:9px; border:1px solid var(--line); background:var(--surface); color:var(--dim); cursor:pointer; font-family:inherit; }
   .ra-subtype.on { border-color:#E8B04B; color:#E8B04B; }
   .ra-inputrow { display:flex; gap:8px; align-items:center; }
-  .ra-input { flex:1; min-width:0; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:11px 13px; color:var(--text); font-size:14px; font-family:inherit; }
+  .ra-input { flex:1; min-width:0; background:var(--surface2); border:1px solid transparent; border-radius:12px; padding:12px 14px; color:var(--text); font-size:14px; font-family:inherit; }
   .ra-input.sm { padding:9px 11px; font-size:13px; } .ra-input.tiny { padding:6px 8px; font-size:12px; flex:none; width:112px; }
   .ra-input:focus { outline:none; border-color:#A78BE0; }
   .ra-suggest { width:44px; min-width:44px; height:42px; border:1px solid var(--line); background:var(--surface); border-radius:10px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--dim); }
@@ -3305,7 +3305,7 @@ function Styles() {
   .ra-statrow { display:flex; gap:11px; margin:18px 0; }
   .ra-stat { flex:1; background:var(--surface); border:1px solid var(--line); border-radius:13px; padding:14px; display:flex; flex-direction:column; gap:3px; }
   .ra-statnum { font-size:24px; font-weight:700; }
-  .ra-card { background:var(--surface); border:1px solid var(--line); border-top-width:3px; border-radius:14px; padding:16px; margin-bottom:14px; }
+  .ra-card { background:var(--surface); border:none; border-radius:20px; padding:18px; margin-bottom:14px; box-shadow:0 2px 12px rgba(0,0,0,.3); }
   .ra-card-h { display:flex; align-items:center; gap:8px; font-family:'Space Grotesk'; font-weight:600; font-size:15px; margin-bottom:13px; }
   .ra-fieldlabel { font-size:12px; color:var(--dim); margin:10px 0 6px; }
   .ra-chipwrap { display:flex; flex-wrap:wrap; gap:6px; }
@@ -3376,6 +3376,35 @@ function Styles() {
   @keyframes rewardPop { 0%{ transform:scale(.985);} 55%{ transform:scale(1.012);} 100%{ transform:scale(1);} }
   .ra-fill, .ra-goal-fill, .ra-goal-sched { transition:width .5s cubic-bezier(.2,.8,.2,1); }
   .ra-check { transition:background .18s ease, transform .13s ease; }
+
+  /* ---- theme v2: deep near-black, soft cards, one warm accent ---- */
+  .ra-root { background:radial-gradient(130% 90% at 50% -12%, #16161F 0%, var(--bg) 55%); background-attachment:fixed; }
+  .ra-top { background:rgba(12,12,17,.82); border-bottom-color:rgba(255,255,255,.05); }
+  .ra-h1 { font-size:29px; letter-spacing:-.5px; }
+  .ra-eyebrow { letter-spacing:3px; color:var(--faint); }
+  .ra-view { padding-top:26px; }
+  .ra-card-h { font-size:15.5px; }
+
+  /* borderless, softly-elevated info cards */
+  .ra-goal, .ra-daycard, .ra-books, .ra-ideas, .ra-wo, .ra-wo-card, .ra-stat, .ra-reward, .ra-import {
+    border:none; border-radius:18px; background:var(--surface); box-shadow:0 2px 12px rgba(0,0,0,.28);
+  }
+
+  /* filled quiet form controls; accent on focus */
+  .ra-input:focus, .ra-textarea:focus, select.ra-input:focus { border-color:var(--accent); outline:none; }
+  .ra-textarea { background:var(--surface2); border:1px solid transparent; }
+  .ra-suggest { background:var(--surface2); border:none; border-radius:12px; color:var(--text); }
+  .ra-gear { background:var(--surface2); border:none; }
+  .ra-rtabs { background:var(--surface2); }
+
+  /* soft filled pills, no outlines */
+  .ra-tchip, .ra-mini, .ra-tag, .ra-subchip { border:none; }
+  .ra-streak { border:none; background:rgba(240,103,62,.15); color:var(--accent); }
+
+  /* the warm accent threads through the key moments */
+  .ra-navbtn.on { color:var(--accent); }
+  .ra-navbtn.on::before { background:var(--accent); }
+  .ra-nav { background:rgba(12,12,17,.88); border-top:1px solid rgba(255,255,255,.05); }
   `);
 }
 try {
