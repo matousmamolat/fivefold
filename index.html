@@ -2307,6 +2307,285 @@ Return ONLY valid JSON, no prose, no fences — one object per slot in the SAME 
   const obj = JSON.parse(txt);
   return obj.meals || [];
 }
+async function mealOptions(fp, slot, time, kcalHint, proteinHint, alreadyToday, dName) {
+  const focus = (fp.focus || []).join(", ") || "balanced";
+  const had = (alreadyToday || []).join("; ") || "nothing yet";
+  const prompt = `Suggest 5 DISTINCT ${slot} options for one person (around ${time || "this meal"}, ${dName}).
+Diet: ${fp.diet}. Cooking willingness: ${fp.cooking}. Preferences: ${focus}.${fp.avoid ? ` Avoid: ${fp.avoid}.` : ""}
+Aim for roughly ${kcalHint || 500} kcal and ${proteinHint || 25} g protein each, appropriate for a ${slot.toLowerCase()}.
+Already logged today (do NOT repeat these; complement them): ${had}.
+VARIETY IS ESSENTIAL — the 5 options must use DIFFERENT main proteins and DIFFERENT bases. Rotate across eggs, Greek yogurt, cottage cheese, tuna / canned fish, deli or cold meats, legumes / beans, tofu, cheese, nut butters, protein shakes, etc. Do NOT make them all chicken and do NOT default to rotisserie chicken. Favour no-cook / minimal-prep, cheap and high-protein where it fits, but keep the 5 genuinely different from each other.
+Return ONLY a JSON array, no prose, no fences: [{"name":"short meal","kcal":450,"protein":30,"note":"quick prep note"}]`;
+  let txt = await callClaude(prompt);
+  txt = txt.replace(/```json|```/g, "").trim();
+  const s = txt.indexOf("["),
+    e = txt.lastIndexOf("]");
+  if (s >= 0 && e >= 0) txt = txt.slice(s, e + 1);
+  const arr = JSON.parse(txt);
+  return Array.isArray(arr) ? arr.slice(0, 6) : [];
+}
+function MealSlotRow({
+  state,
+  update,
+  slot,
+  target,
+  protein,
+  entries,
+  other
+}) {
+  const t = todayISO();
+  const [name, setName] = useState("");
+  const [kcal, setKcal] = useState("");
+  const [est, setEst] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [opts, setOpts] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState("");
+  const isSnack = /snack/i.test(slot.slot);
+  const kcalHint = target ? Math.round(target * (isSnack ? 0.15 : 0.3)) : 0;
+  const proteinHint = protein ? Math.round(protein * (isSnack ? 0.15 : 0.3)) : 0;
+  const addEntry = (nm, k, p) => update(s => {
+    s.food.log[t] = s.food.log[t] || [];
+    s.food.log[t].push({
+      id: uid(),
+      name: nm,
+      kcal: Number(k) || 0,
+      protein: Number(p) || 0,
+      slot: other ? "" : slot.slot
+    });
+  });
+  const removeEntry = id => update(s => {
+    if (s.food.log[t]) s.food.log[t] = s.food.log[t].filter(x => x.id !== id);
+  });
+  const manualAdd = async () => {
+    if (!name.trim()) return;
+    let k = Number(kcal) || 0;
+    if (!kcal) {
+      setEst(true);
+      try {
+        k = await estimateKcal(name.trim());
+      } catch {}
+      setEst(false);
+    }
+    addEntry(name.trim(), k, 0);
+    setName("");
+    setKcal("");
+  };
+  const getIdeas = async () => {
+    setErr("");
+    setLoading(true);
+    try {
+      const already = (state.food.log[t] || []).map(m => m.name);
+      const o = await mealOptions(state.food.profile, slot.slot, slot.time, kcalHint, proteinHint, already, dayName(t));
+      setOpts(o);
+    } catch (e) {
+      setErr(aiErr(e));
+    } finally {
+      setLoading(false);
+    }
+  };
+  const slotK = entries.reduce((a, m) => a + (Number(m.kcal) || 0), 0);
+  return /*#__PURE__*/React.createElement("div", {
+    className: "ra-slot"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ra-slot-head"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ra-slot-when"
+  }, slot.time ? /*#__PURE__*/React.createElement("span", {
+    className: "mono ra-slot-time"
+  }, slot.time) : null, /*#__PURE__*/React.createElement("span", {
+    className: "ra-slot-name"
+  }, slot.slot)), slotK ? /*#__PURE__*/React.createElement("span", {
+    className: "ra-dim ra-small mono"
+  }, slotK, " kcal") : null), entries.map(m => /*#__PURE__*/React.createElement("div", {
+    key: m.id,
+    className: "ra-slot-entry"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "ra-slot-food"
+  }, m.name), /*#__PURE__*/React.createElement("span", {
+    className: "mono ra-dim ra-small"
+  }, m.kcal, m.protein ? ` · ${m.protein}g` : ""), /*#__PURE__*/React.createElement("button", {
+    className: "ra-ghost sm",
+    onClick: () => removeEntry(m.id)
+  }, /*#__PURE__*/React.createElement(Trash2, {
+    size: 13
+  })))), /*#__PURE__*/React.createElement("div", {
+    className: "ra-slot-actions"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "ra-slot-btn",
+    onClick: () => setOpen(v => !v)
+  }, /*#__PURE__*/React.createElement(Plus, {
+    size: 14
+  }), " Add"), !other && /*#__PURE__*/React.createElement("button", {
+    className: "ra-slot-btn accent",
+    onClick: getIdeas,
+    disabled: loading
+  }, loading ? /*#__PURE__*/React.createElement(Loader2, {
+    size: 14,
+    className: "spin"
+  }) : /*#__PURE__*/React.createElement(Sparkles, {
+    size: 14
+  }), " Ideas")), open && /*#__PURE__*/React.createElement("div", {
+    className: "ra-inputrow",
+    style: {
+      marginTop: 8
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    className: "ra-input sm",
+    placeholder: other ? "Log something you ate" : "Add to " + slot.slot.toLowerCase(),
+    value: name,
+    onChange: e => setName(e.target.value),
+    onKeyDown: e => e.key === "Enter" && manualAdd()
+  }), /*#__PURE__*/React.createElement("input", {
+    className: "ra-input tiny",
+    style: {
+      width: 62
+    },
+    type: "number",
+    placeholder: "kcal",
+    value: kcal,
+    onChange: e => setKcal(e.target.value),
+    onKeyDown: e => e.key === "Enter" && manualAdd()
+  }), /*#__PURE__*/React.createElement("button", {
+    className: "ra-suggest",
+    onClick: manualAdd,
+    disabled: est,
+    title: "Add (estimates kcal if blank)"
+  }, est ? /*#__PURE__*/React.createElement(Loader2, {
+    size: 15,
+    className: "spin"
+  }) : /*#__PURE__*/React.createElement(Plus, {
+    size: 15
+  }))), err && /*#__PURE__*/React.createElement("p", {
+    className: "ra-warn ra-small"
+  }, err), opts && /*#__PURE__*/React.createElement("div", {
+    className: "ra-opts"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ra-opts-head"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "ra-dim ra-small"
+  }, "Pick one to add it"), /*#__PURE__*/React.createElement("button", {
+    className: "ra-slot-btn",
+    onClick: getIdeas,
+    disabled: loading
+  }, loading ? /*#__PURE__*/React.createElement(Loader2, {
+    size: 12,
+    className: "spin"
+  }) : /*#__PURE__*/React.createElement(RefreshCw, {
+    size: 12
+  }), " More")), opts.map((o, i) => /*#__PURE__*/React.createElement("button", {
+    key: i,
+    className: "ra-opt",
+    onClick: () => {
+      addEntry(o.name, o.kcal, o.protein);
+      setOpts(null);
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ra-opt-body"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "ra-opt-name"
+  }, o.name), o.note ? /*#__PURE__*/React.createElement("span", {
+    className: "ra-dim ra-small"
+  }, o.note) : null), /*#__PURE__*/React.createElement("span", {
+    className: "mono ra-dim ra-small ra-opt-macros"
+  }, o.kcal, /*#__PURE__*/React.createElement("br", null), o.protein, "g")))));
+}
+function MealsToday({
+  state,
+  update,
+  target
+}) {
+  const t = todayISO();
+  const protein = proteinTargetOf(state.profile, state.food.profile);
+  const log = state.food.log[t] || [];
+  const slots = [...(state.food.profile.mealTimes || [])].sort((a, b) => (a.time || "").localeCompare(b.time || ""));
+  const totalK = log.reduce((a, m) => a + (Number(m.kcal) || 0), 0);
+  const totalP = log.reduce((a, m) => a + (Number(m.protein) || 0), 0);
+  let read = null;
+  if (target && totalK > 0) {
+    const r = totalK / target;
+    read = r < 0.8 ? {
+      t: "light so far",
+      c: "#5EA8E8"
+    } : r <= 1.12 ? {
+      t: "on track",
+      c: "#4EC1A6"
+    } : {
+      t: "over maintenance",
+      c: "#E8B04B"
+    };
+  }
+  const otherEntries = log.filter(m => !m.slot || !slots.some(sl => sl.slot === m.slot));
+  return /*#__PURE__*/React.createElement("div", {
+    className: "ra-card",
+    style: {
+      borderTopColor: "#4EC1A6"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ra-card-h"
+  }, /*#__PURE__*/React.createElement(Utensils, {
+    size: 16,
+    color: "#4EC1A6"
+  }), " Today's meals"), /*#__PURE__*/React.createElement("div", {
+    className: "ra-foodtotal"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "mono ra-tdee-num"
+  }, totalK), /*#__PURE__*/React.createElement("span", {
+    className: "ra-dim ra-small"
+  }, target ? "of ~" + target + " kcal" : "kcal", read ? " · " : "", read && /*#__PURE__*/React.createElement("b", {
+    style: {
+      color: read.c
+    }
+  }, read.t), protein ? " · " + totalP + "/" + protein + "g protein" : "")), target > 0 && /*#__PURE__*/React.createElement("div", {
+    className: "ra-bar",
+    style: {
+      marginBottom: 6
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ra-fill",
+    style: {
+      width: Math.min(100, totalK / target * 100) + "%",
+      background: read ? read.c : "#4EC1A6"
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "ra-slots"
+  }, slots.map(sl => /*#__PURE__*/React.createElement(MealSlotRow, {
+    key: sl.slot + sl.time,
+    state: state,
+    update: update,
+    slot: sl,
+    target: target,
+    protein: protein,
+    entries: log.filter(m => m.slot === sl.slot)
+  })), otherEntries.length > 0 && /*#__PURE__*/React.createElement(MealSlotRow, {
+    state: state,
+    update: update,
+    slot: {
+      slot: "Other",
+      time: ""
+    },
+    target: target,
+    protein: protein,
+    entries: otherEntries,
+    other: true
+  }), otherEntries.length === 0 && /*#__PURE__*/React.createElement(MealSlotRow, {
+    state: state,
+    update: update,
+    slot: {
+      slot: "Other",
+      time: ""
+    },
+    target: target,
+    protein: protein,
+    entries: [],
+    other: true
+  })), /*#__PURE__*/React.createElement("p", {
+    className: "ra-dim ra-small",
+    style: {
+      marginTop: 4
+    }
+  }, "Type what you ate (kcal auto-estimated if blank), or tap Ideas for varied options per meal. Edit meal times in Settings."));
+}
 function Food({
   state,
   update
@@ -2330,11 +2609,7 @@ function Food({
   }, protein, /*#__PURE__*/React.createElement("i", null, "g P")) : null)), /*#__PURE__*/React.createElement(WeighInCard, {
     state: state,
     update: update
-  }), /*#__PURE__*/React.createElement(MealPlan, {
-    state: state,
-    update: update,
-    target: target
-  }), /*#__PURE__*/React.createElement(FoodLog, {
+  }), /*#__PURE__*/React.createElement(MealsToday, {
     state: state,
     update: update,
     target: target
@@ -3534,6 +3809,26 @@ function Styles() {
   .ra-stat3-big { font-size:23px; font-weight:700; color:var(--text); line-height:1; }
   .ra-stat3-n { font-size:14px; font-weight:700; color:var(--text); }
   .ra-stat3-l { font-size:10.5px; color:var(--dim); text-align:center; letter-spacing:.2px; line-height:1.2; }
+
+  /* ---- food: meal slots + idea options ---- */
+  .ra-slots { display:flex; flex-direction:column; gap:10px; margin-top:12px; }
+  .ra-slot { background:var(--surface2); border-radius:15px; padding:13px 14px; }
+  .ra-slot-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:2px; }
+  .ra-slot-when { display:flex; align-items:baseline; gap:8px; }
+  .ra-slot-time { font-size:12px; color:var(--accent); }
+  .ra-slot-name { font-size:14px; font-weight:600; color:var(--text); }
+  .ra-slot-entry { display:flex; align-items:center; gap:10px; padding:6px 0; border-top:1px solid rgba(255,255,255,.04); }
+  .ra-slot-entry:first-of-type { border-top:none; margin-top:4px; }
+  .ra-slot-food { flex:1; min-width:0; font-size:13.5px; color:var(--text); }
+  .ra-slot-actions { display:flex; gap:8px; margin-top:8px; }
+  .ra-slot-btn { display:inline-flex; align-items:center; gap:5px; background:var(--surface); border:none; color:var(--dim); font-size:12.5px; font-weight:600; font-family:inherit; padding:7px 12px; border-radius:999px; cursor:pointer; }
+  .ra-slot-btn.accent { color:var(--accent); background:rgba(240,103,62,.12); }
+  .ra-opts { margin-top:10px; display:flex; flex-direction:column; gap:7px; }
+  .ra-opts-head { display:flex; align-items:center; justify-content:space-between; }
+  .ra-opt { display:flex; align-items:center; justify-content:space-between; gap:10px; text-align:left; width:100%; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:11px 13px; cursor:pointer; font-family:inherit; }
+  .ra-opt-body { min-width:0; display:flex; flex-direction:column; gap:2px; }
+  .ra-opt-name { font-size:13.5px; font-weight:600; color:var(--text); }
+  .ra-opt-macros { text-align:right; line-height:1.25; flex:none; }
   `);
 }
 try {
