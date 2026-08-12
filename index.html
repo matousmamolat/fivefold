@@ -2746,6 +2746,20 @@ function ReadingCard({
   const [recLoading, setRecLoading] = useState(false);
   const [recErr, setRecErr] = useState("");
   const [rtab, setRtab] = useState("reading");
+  const [selMode, setSelMode] = useState(false);
+  const [sel, setSel] = useState([]);
+  const toggleSel = id => setSel(c => c.includes(id) ? c.filter(x => x !== id) : [...c, id]);
+  const removeMany = ids => {
+    update(s => {
+      s.reading = s.reading.filter(x => !ids.includes(x.id));
+    });
+    setSel([]);
+    setSelMode(false);
+  };
+  const resetSel = () => {
+    setSel([]);
+    setSelMode(false);
+  };
   const rename = id => {
     update(s => {
       const b = s.reading.find(x => x.id === id);
@@ -2847,16 +2861,26 @@ function ReadingCard({
     size: 14
   })))) : /*#__PURE__*/React.createElement("div", {
     key: b.id,
-    className: "ra-book"
-  }, /*#__PURE__*/React.createElement("button", {
+    className: "ra-book" + (selMode && sel.includes(b.id) ? " sel" : "")
+  }, selMode ? /*#__PURE__*/React.createElement("button", {
+    className: "ra-selbox" + (sel.includes(b.id) ? " on" : ""),
+    onClick: () => toggleSel(b.id)
+  }, sel.includes(b.id) ? /*#__PURE__*/React.createElement(Check, {
+    size: 13
+  }) : null) : /*#__PURE__*/React.createElement("button", {
     className: "ra-status " + b.status,
     onClick: () => cycle(b.id),
     title: "Change status"
   }, b.status === "queued" ? "want" : b.status), /*#__PURE__*/React.createElement("span", {
-    className: b.status === "done" ? "struck" : ""
+    className: b.status === "done" ? "struck" : "",
+    onClick: selMode ? () => toggleSel(b.id) : undefined,
+    style: selMode ? {
+      flex: 1,
+      cursor: "pointer"
+    } : undefined
   }, b.title, b.author ? /*#__PURE__*/React.createElement("em", {
     className: "ra-author"
-  }, " · ", b.author) : null), /*#__PURE__*/React.createElement("button", {
+  }, " · ", b.author) : null), !selMode && /*#__PURE__*/React.createElement("button", {
     className: "ra-ghost sm",
     onClick: () => {
       setEditId(b.id);
@@ -2865,7 +2889,7 @@ function ReadingCard({
     }
   }, /*#__PURE__*/React.createElement(Pencil, {
     size: 13
-  })), /*#__PURE__*/React.createElement("button", {
+  })), !selMode && /*#__PURE__*/React.createElement("button", {
     className: "ra-ghost sm",
     onClick: () => remove(b.id)
   }, /*#__PURE__*/React.createElement(Trash2, {
@@ -2905,14 +2929,38 @@ function ReadingCard({
   }, [["reading", "Reading"], ["queued", "Want to read"], ["done", "Read"], ["recs", "Recs"]].map(([id, label]) => /*#__PURE__*/React.createElement("button", {
     key: id,
     className: "ra-rtab" + (rtab === id ? " on" : ""),
-    onClick: () => setRtab(id)
+    onClick: () => {
+      setRtab(id);
+      resetSel();
+    }
   }, id === "recs" ? /*#__PURE__*/React.createElement(Sparkles, {
     size: 12
   }) : null, label, id !== "recs" ? /*#__PURE__*/React.createElement("span", {
     className: "ra-rtab-n"
   }, groups[id].length) : null))), rtab !== "recs" ? /*#__PURE__*/React.createElement("div", {
     className: "ra-rlist"
-  }, groups[rtab].length === 0 ? /*#__PURE__*/React.createElement("p", {
+  }, groups[rtab].length > 0 && /*#__PURE__*/React.createElement("div", {
+    className: "ra-selbar"
+  }, !selMode ? /*#__PURE__*/React.createElement("button", {
+    className: "ra-selbar-link",
+    onClick: () => setSelMode(true)
+  }, "Select") : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+    className: "ra-selbar-link",
+    onClick: () => setSel(groups[rtab].map(b => b.id))
+  }, "Select all"), /*#__PURE__*/React.createElement("span", {
+    className: "ra-dim ra-small"
+  }, sel.length, " selected"), /*#__PURE__*/React.createElement("div", {
+    className: "ra-selbar-r"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "ra-selbar-link",
+    onClick: resetSel
+  }, "Cancel"), /*#__PURE__*/React.createElement("button", {
+    className: "ra-del-sel",
+    disabled: !sel.length,
+    onClick: () => removeMany(sel)
+  }, /*#__PURE__*/React.createElement(Trash2, {
+    size: 13
+  }), " Delete", sel.length ? ` (${sel.length})` : "")))), groups[rtab].length === 0 ? /*#__PURE__*/React.createElement("p", {
     className: "ra-dim ra-small"
   }, "Nothing here yet.") : groups[rtab].map(bookRow), rtab === "queued" && (!importing ? /*#__PURE__*/React.createElement("button", {
     className: "ra-import-toggle",
@@ -3147,7 +3195,7 @@ function Styles() {
   .ra-addbtn:hover { background:var(--line); }
   .ra-sheet-wrap { position:fixed; inset:0; background:rgba(10,11,22,.6); backdrop-filter:blur(3px); display:flex; align-items:flex-end; justify-content:center; z-index:20; animation:fade .2s ease; }
   @keyframes fade { from { opacity:0;} to { opacity:1;} }
-  .ra-sheet { background:var(--bg); border:1px solid var(--line); border-radius:22px 22px 0 0; width:100%; max-width:480px; max-height:90vh; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:20px; padding-bottom:calc(20px + env(safe-area-inset-bottom)); animation:slideup .28s cubic-bezier(.2,.8,.2,1); }
+  .ra-sheet { background:var(--bg); border:1px solid var(--line); border-radius:22px 22px 0 0; width:100%; max-width:480px; max-height:90vh; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; padding:20px; padding-bottom:calc(20px + env(safe-area-inset-bottom)); animation:slideup .28s cubic-bezier(.2,.8,.2,1); }
   @keyframes slideup { from { transform:translateY(100%);} to { transform:none;} }
   .ra-sheet-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px; }
   .ra-sheet-title { font-family:'Space Grotesk'; font-size:18px; font-weight:600; }
@@ -3223,6 +3271,14 @@ function Styles() {
   .ra-rtab.on { background:var(--surface); color:#5EA8E8; }
   .ra-rtab-n { font-size:10px; background:var(--bg); border-radius:6px; padding:0 5px; color:var(--dim); }
   .ra-rtab.on .ra-rtab-n { color:#5EA8E8; }
+  .ra-selbar { display:flex; align-items:center; gap:10px; padding:2px 2px 8px; }
+  .ra-selbar-r { margin-left:auto; display:flex; align-items:center; gap:10px; }
+  .ra-selbar-link { background:none; border:none; color:#5EA8E8; font-size:12.5px; font-weight:600; font-family:inherit; cursor:pointer; padding:4px 2px; }
+  .ra-del-sel { display:inline-flex; align-items:center; gap:5px; background:rgba(236,122,147,.14); color:#EC7A93; border:1px solid rgba(236,122,147,.35); border-radius:999px; padding:6px 12px; font-size:12.5px; font-weight:600; font-family:inherit; cursor:pointer; }
+  .ra-del-sel:disabled { opacity:.4; }
+  .ra-selbox { flex:none; width:22px; height:22px; border-radius:7px; border:1.5px solid var(--line); background:var(--surface); color:#16182B; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+  .ra-selbox.on { background:#5EA8E8; border-color:#5EA8E8; }
+  .ra-book.sel { background:rgba(94,168,232,.08); border-color:rgba(94,168,232,.4); }
   .ra-rlist { display:flex; flex-direction:column; margin-top:6px; }
   .ra-tl-task { display:flex; align-items:flex-start; gap:6px; }
   .ra-tl-task > .ra-task { flex:1; }
@@ -3256,8 +3312,8 @@ function Styles() {
   .ra-mini { font-size:12px; padding:6px 10px; border-radius:8px; border:1px solid var(--line); background:var(--surface2); color:var(--dim); cursor:pointer; font-family:inherit; }
   .ra-mini.on { border-color:#4EC1A6; color:#4EC1A6; }
   .ra-range { width:100%; accent-color:#4EC1A6; }
-  .ra-formgrid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:6px; }
-  .ra-field { display:flex; flex-direction:column; gap:5px; font-size:12px; color:var(--dim); }
+  .ra-formgrid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px; margin-bottom:6px; }
+  .ra-field { display:flex; flex-direction:column; gap:5px; font-size:12px; color:var(--dim); min-width:0; }
   .ra-tdee { display:flex; align-items:baseline; gap:9px; background:var(--surface2); border-radius:11px; padding:13px; margin-top:10px; }
   .ra-tdee-num { font-size:26px; font-weight:700; color:#4EC1A6; }
   .ra-book { display:flex; align-items:center; gap:10px; padding:9px 0; border-top:1px solid var(--line); font-size:14px; }
