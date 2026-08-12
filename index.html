@@ -978,6 +978,52 @@ function TaskEditor({
     size: 16
   }))));
 }
+function Ring({
+  value,
+  max,
+  size = 96,
+  stroke = 9,
+  color = "#F0673E",
+  track = "rgba(255,255,255,.07)",
+  children
+}) {
+  const r = (size - stroke) / 2;
+  const c = 2 * Math.PI * r;
+  const frac = max > 0 ? Math.min(1, value / max) : 0;
+  return /*#__PURE__*/React.createElement("div", {
+    className: "ra-ring",
+    style: {
+      width: size,
+      height: size
+    }
+  }, /*#__PURE__*/React.createElement("svg", {
+    width: size,
+    height: size
+  }, /*#__PURE__*/React.createElement("circle", {
+    cx: size / 2,
+    cy: size / 2,
+    r: r,
+    fill: "none",
+    stroke: track,
+    strokeWidth: stroke
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: size / 2,
+    cy: size / 2,
+    r: r,
+    fill: "none",
+    stroke: color,
+    strokeWidth: stroke,
+    strokeLinecap: "round",
+    strokeDasharray: c,
+    strokeDashoffset: c * (1 - frac),
+    transform: "rotate(-90 " + size / 2 + " " + size / 2 + ")",
+    style: {
+      transition: "stroke-dashoffset .6s cubic-bezier(.2,.8,.2,1)"
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "ra-ring-c"
+  }, children));
+}
 function Today({
   state,
   update
@@ -991,6 +1037,27 @@ function Today({
   const doneCount = tasks.filter(taskDone).length;
   const allDone = tasks.length > 0 && doneCount === tasks.length;
   const pct = tasks.length ? Math.round(doneCount / tasks.length * 100) : 0;
+  const streak = computeStreak(state.days);
+  const wk = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    wk.push(d.toISOString().slice(0, 10));
+  }
+  let weekDone = 0;
+  const pset = new Set();
+  wk.forEach(ds => {
+    const dd = state.days[ds];
+    if (dd && dd.tasks) dd.tasks.forEach(tk => {
+      if (taskDone(tk)) {
+        weekDone++;
+        pset.add(tk.pillar);
+      }
+    });
+  });
+  const pillarsHit = pset.size;
+  const heroTitle = tasks.length === 0 ? day.light ? "Rest day" : "Plan your day" : allDone ? "All done" : doneCount + " of " + tasks.length + " done";
+  const heroSub = tasks.length === 0 ? day.light ? "Rest counts. Enjoy it." : "Open Week to build it." : allDone ? "Nice — games unlocked." : tasks.length - doneCount + " to go";
   const toggleTask = id => update(s => {
     const dd = s.days[t];
     const task = dd?.tasks.find(x => x.id === id);
@@ -1014,22 +1081,65 @@ function Today({
   const [editId, setEditId] = useState(null);
   return /*#__PURE__*/React.createElement("div", {
     className: "ra-view"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ra-hero"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ra-hero-l"
   }, /*#__PURE__*/React.createElement("p", {
-    className: "ra-eyebrow"
-  }, day.light ? "Light day" : "Today"), /*#__PURE__*/React.createElement("h1", {
-    className: "ra-h1"
-  }, prettyDate(t)), /*#__PURE__*/React.createElement("div", {
-    className: "ra-progress"
+    className: "ra-hero-day"
+  }, prettyDate(t), day.light ? " · light" : ""), /*#__PURE__*/React.createElement("h1", {
+    className: "ra-hero-title"
+  }, heroTitle), /*#__PURE__*/React.createElement("p", {
+    className: "ra-hero-sub"
+  }, heroSub), /*#__PURE__*/React.createElement("div", {
+    className: "ra-hero-streak"
+  }, /*#__PURE__*/React.createElement(Flame, {
+    size: 14,
+    color: "#F0673E"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "mono"
+  }, streak), " day", streak === 1 ? "" : "s")), /*#__PURE__*/React.createElement(Ring, {
+    value: doneCount,
+    max: tasks.length || 1,
+    size: 92,
+    stroke: 9,
+    color: "#F0673E"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "ra-ring-num mono"
+  }, tasks.length ? pct + "%" : "–"), /*#__PURE__*/React.createElement("span", {
+    className: "ra-ring-lbl"
+  }, doneCount, "/", tasks.length))), /*#__PURE__*/React.createElement("div", {
+    className: "ra-stats3"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "ra-bar"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "ra-fill",
+    className: "ra-stat3"
+  }, /*#__PURE__*/React.createElement(Ring, {
+    value: pillarsHit,
+    max: 5,
+    size: 50,
+    stroke: 6,
+    color: "#A78BE0"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "ra-stat3-n mono"
+  }, pillarsHit)), /*#__PURE__*/React.createElement("span", {
+    className: "ra-stat3-l"
+  }, "pillars /5")), /*#__PURE__*/React.createElement("div", {
+    className: "ra-stat3"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "ra-stat3-big mono"
+  }, weekDone), /*#__PURE__*/React.createElement("span", {
+    className: "ra-stat3-l"
+  }, "done this week")), /*#__PURE__*/React.createElement("div", {
+    className: "ra-stat3"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "ra-stat3-big mono"
+  }, streak), /*#__PURE__*/React.createElement("span", {
+    className: "ra-stat3-l"
+  }, "day streak"))), tasks.length > 0 && /*#__PURE__*/React.createElement("p", {
+    className: "ra-eyebrow",
     style: {
-      width: pct + "%"
+      marginBottom: 10
     }
-  })), /*#__PURE__*/React.createElement("span", {
-    className: "mono ra-pct"
-  }, doneCount, "/", tasks.length)), tasks.length === 0 ? /*#__PURE__*/React.createElement("div", {
+  }, "Schedule"), tasks.length === 0 ? /*#__PURE__*/React.createElement("div", {
     className: "ra-empty"
   }, /*#__PURE__*/React.createElement("p", null, day.light ? "A light day — nothing planned. Rest counts." : "Nothing scheduled yet."), /*#__PURE__*/React.createElement("p", {
     className: "ra-dim"
@@ -3405,6 +3515,25 @@ function Styles() {
   .ra-navbtn.on { color:var(--accent); }
   .ra-navbtn.on::before { background:var(--accent); }
   .ra-nav { background:rgba(12,12,17,.88); border-top:1px solid rgba(255,255,255,.05); }
+
+  /* ---- hero card + progress rings ---- */
+  .ra-hero { display:flex; gap:14px; align-items:center; justify-content:space-between; background:linear-gradient(135deg, rgba(240,103,62,.16), rgba(240,103,62,.03)); border:1px solid rgba(240,103,62,.16); border-radius:24px; padding:20px; margin-bottom:12px; }
+  .ra-hero-l { min-width:0; }
+  .ra-hero-day { font-size:12px; color:var(--dim); letter-spacing:.3px; margin:0 0 5px; }
+  .ra-hero-title { font-family:'Space Grotesk','Inter',sans-serif; font-size:27px; font-weight:600; line-height:1.08; letter-spacing:-.6px; margin:0; color:var(--text); }
+  .ra-hero-sub { font-size:13px; color:var(--dim); margin:6px 0 0; }
+  .ra-hero-streak { display:inline-flex; align-items:center; gap:5px; margin-top:13px; font-size:12.5px; font-weight:600; color:var(--text); background:rgba(0,0,0,.28); padding:5px 11px; border-radius:999px; }
+  .ra-hero-streak .mono { color:#F0673E; }
+  .ra-hero-r, .ra-ring { flex:none; }
+  .ra-ring { position:relative; display:inline-flex; align-items:center; justify-content:center; }
+  .ra-ring-c { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .ra-ring-num { font-size:19px; font-weight:700; color:var(--text); line-height:1; }
+  .ra-ring-lbl { font-size:10px; color:var(--dim); margin-top:2px; }
+  .ra-stats3 { display:flex; gap:10px; margin-bottom:20px; }
+  .ra-stat3 { flex:1; min-width:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:7px; background:var(--surface); border-radius:16px; padding:15px 8px; box-shadow:0 2px 10px rgba(0,0,0,.24); min-height:96px; }
+  .ra-stat3-big { font-size:23px; font-weight:700; color:var(--text); line-height:1; }
+  .ra-stat3-n { font-size:14px; font-weight:700; color:var(--text); }
+  .ra-stat3-l { font-size:10.5px; color:var(--dim); text-align:center; letter-spacing:.2px; line-height:1.2; }
   `);
 }
 try {
