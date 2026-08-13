@@ -829,11 +829,51 @@ function App() {
     onClose: () => setShowSettings(false)
   }));
 }
+function SettingsRow({
+  id,
+  color,
+  Ico,
+  label,
+  value,
+  open,
+  setOpen,
+  children
+}) {
+  const on = open === id;
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+    className: "ra-set-row" + (on ? " open" : ""),
+    onClick: () => setOpen(on ? null : id)
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "ra-set-ico",
+    style: {
+      background: color + "22",
+      color
+    }
+  }, /*#__PURE__*/React.createElement(Ico, {
+    size: 14
+  })), /*#__PURE__*/React.createElement("span", {
+    className: "ra-set-label"
+  }, label), /*#__PURE__*/React.createElement("span", {
+    className: "ra-set-val"
+  }, value), /*#__PURE__*/React.createElement("span", {
+    className: "ra-set-chev"
+  }, /*#__PURE__*/React.createElement(ChevronRight, {
+    size: 16
+  }))), on && /*#__PURE__*/React.createElement("div", {
+    className: "ra-set-body"
+  }, children));
+}
 function SettingsSheet({
   state,
   update,
   onClose
 }) {
+  const [open, setOpen] = useState(null);
+  const pr = state.profile || {};
+  const f = pr.fitness || {};
+  const fp = state.food.profile || {};
+  const tdee = tdeeOf(pr);
+  const protein = proteinTargetOf(pr, fp);
   return /*#__PURE__*/React.createElement("div", {
     className: "ra-sheet-wrap",
     onClick: onClose
@@ -841,32 +881,90 @@ function SettingsSheet({
     className: "ra-sheet",
     onClick: e => e.stopPropagation()
   }, /*#__PURE__*/React.createElement("div", {
+    className: "ra-sheet-grab"
+  }), /*#__PURE__*/React.createElement("div", {
     className: "ra-sheet-top"
-  }, /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     className: "ra-sheet-title"
-  }, "Your variables"), /*#__PURE__*/React.createElement("button", {
+  }, "Your variables"), /*#__PURE__*/React.createElement("div", {
+    className: "ra-dim ra-small"
+  }, "Set once — they quietly power your targets, meals and workouts.")), /*#__PURE__*/React.createElement("button", {
     className: "ra-ghost",
     onClick: onClose
   }, /*#__PURE__*/React.createElement(X, {
     size: 20
   }))), /*#__PURE__*/React.createElement("p", {
+    className: "ra-eyebrow ra-set-h"
+  }, "Body"), /*#__PURE__*/React.createElement("div", {
+    className: "ra-set-group"
+  }, /*#__PURE__*/React.createElement(SettingsRow, {
+    id: "stats",
+    color: "#4EC1A6",
+    Ico: Heart,
+    label: "Stats & targets",
+    value: tdee ? tdee + (protein ? " · " + protein + "g" : "") : "not set",
+    open: open,
+    setOpen: setOpen
+  }, /*#__PURE__*/React.createElement(AISettingsCard, null), /*#__PURE__*/React.createElement(CalorieCard, {
+    state: state,
+    update: update
+  })), /*#__PURE__*/React.createElement(SettingsRow, {
+    id: "training",
+    color: "#4EC1A6",
+    Ico: Dumbbell,
+    label: "Training profile",
+    value: (f.session || 0) + " min",
+    open: open,
+    setOpen: setOpen
+  }, /*#__PURE__*/React.createElement(FitnessCard, {
+    state: state,
+    update: update
+  }))), /*#__PURE__*/React.createElement("p", {
+    className: "ra-eyebrow ra-set-h"
+  }, "Food"), /*#__PURE__*/React.createElement("div", {
+    className: "ra-set-group"
+  }, /*#__PURE__*/React.createElement(SettingsRow, {
+    id: "food",
+    color: "#4EC1A6",
+    Ico: Utensils,
+    label: "Preferences & meal times",
+    value: (fp.mealTimes || []).length + " slots",
+    open: open,
+    setOpen: setOpen
+  }, /*#__PURE__*/React.createElement(FoodProfileCard, {
+    state: state,
+    update: update
+  }))), /*#__PURE__*/React.createElement("p", {
+    className: "ra-eyebrow ra-set-h"
+  }, "Life"), /*#__PURE__*/React.createElement("div", {
+    className: "ra-set-group"
+  }, /*#__PURE__*/React.createElement(SettingsRow, {
+    id: "events",
+    color: "#EC7A93",
+    Ico: Users,
+    label: "Event interests",
+    value: (pr.city || "Prague") + " · " + (pr.eventInterests || []).length,
+    open: open,
+    setOpen: setOpen
+  }, /*#__PURE__*/React.createElement(EventInterestsCard, {
+    state: state,
+    update: update
+  })), /*#__PURE__*/React.createElement(SettingsRow, {
+    id: "ai",
+    color: "#A78BE0",
+    Ico: Sparkles,
+    label: "AI key",
+    value: "generators",
+    open: open,
+    setOpen: setOpen
+  }, typeof AISettingsCard !== "undefined" ? /*#__PURE__*/React.createElement(AISettingsCard, null) : /*#__PURE__*/React.createElement("p", {
     className: "ra-dim ra-small",
     style: {
-      marginBottom: 14
+      padding: "2px 12px 10px"
     }
-  }, "Set once and forget — everything here quietly powers your targets, meals, and workouts."), /*#__PURE__*/React.createElement(AISettingsCard, null), /*#__PURE__*/React.createElement(CalorieCard, {
-    state: state,
-    update: update
-  }), /*#__PURE__*/React.createElement(FitnessCard, {
-    state: state,
-    update: update
-  }), /*#__PURE__*/React.createElement(FoodProfileCard, {
-    state: state,
-    update: update
-  }), /*#__PURE__*/React.createElement(EventInterestsCard, {
-    state: state,
-    update: update
-  })));
+  }, "The AI key card is added by the build step."))), /*#__PURE__*/React.createElement("p", {
+    className: "ra-set-foot"
+  }, "Everything lives on this phone. Nothing is uploaded.")));
 }
 function EventInterestsCard({
   state,
@@ -1294,6 +1392,13 @@ function weekPillarProgress(days, anchor) {
   }
   return prog;
 }
+const SHORT_PILLAR = {
+  health: "Health",
+  creativity: "Create",
+  mindfulness: "Mind",
+  socialising: "Social",
+  growth: "Growth"
+};
 function WeeklyGoal({
   prog
 }) {
@@ -1305,7 +1410,7 @@ function WeeklyGoal({
   }, /*#__PURE__*/React.createElement("span", null, "Weekly goal · ", WEEK_GOAL, " per pillar"), /*#__PURE__*/React.createElement("span", {
     className: "mono ra-goal-met"
   }, met, "/5")), /*#__PURE__*/React.createElement("div", {
-    className: "ra-goal-rows"
+    className: "ra-pillrings"
   }, PILLAR_KEYS.map(k => {
     const p = PILLARS[k];
     const {
@@ -1313,35 +1418,25 @@ function WeeklyGoal({
       total
     } = prog[k];
     const hit = done >= WEEK_GOAL;
-    const donePct = Math.min(100, done / WEEK_GOAL * 100);
-    const schedPct = Math.min(100, total / WEEK_GOAL * 100);
     return /*#__PURE__*/React.createElement("div", {
       key: k,
-      className: "ra-goal-row"
+      className: "ra-pillring"
+    }, /*#__PURE__*/React.createElement(Ring, {
+      value: done,
+      max: WEEK_GOAL,
+      size: 56,
+      stroke: 6,
+      color: p.color
     }, /*#__PURE__*/React.createElement("span", {
-      className: "ra-goal-name",
-      style: {
+      className: "mono ra-pillring-n",
+      style: hit ? {
         color: p.color
-      }
-    }, /*#__PURE__*/React.createElement(p.Icon, {
-      size: 13
-    }), " ", p.name), /*#__PURE__*/React.createElement("div", {
-      className: "ra-goal-bar"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "ra-goal-sched",
-      style: {
-        width: schedPct + "%",
-        background: p.color
-      }
-    }), /*#__PURE__*/React.createElement("div", {
-      className: "ra-goal-fill",
-      style: {
-        width: donePct + "%",
-        background: p.color
-      }
-    })), /*#__PURE__*/React.createElement("span", {
-      className: "ra-goal-count mono" + (hit ? " met" : "")
-    }, done, "/", WEEK_GOAL, hit ? " ✓" : ""));
+      } : undefined
+    }, done)), /*#__PURE__*/React.createElement("span", {
+      className: "ra-pillring-l"
+    }, SHORT_PILLAR[k], total > done ? /*#__PURE__*/React.createElement("em", {
+      className: "ra-pillring-p"
+    }, " +", total - done) : null));
   })), met === 5 && /*#__PURE__*/React.createElement("div", {
     className: "ra-goal-done"
   }, "All five pillars hit — full week ✦"));
@@ -1353,6 +1448,21 @@ function Week({
   const [anchor, setAnchor] = useState(todayISO());
   const [editing, setEditing] = useState(null);
   const days = weekOf(anchor);
+  const prog = weekPillarProgress(state.days, anchor);
+  const met = PILLAR_KEYS.filter(k => prog[k].done >= WEEK_GOAL).length;
+  let planned = 0,
+    done = 0,
+    lightDays = 0;
+  days.forEach(d => {
+    const day = state.days[d];
+    if (!day) return;
+    if (day.light) lightDays++;
+    (day.tasks || []).forEach(tk => {
+      planned++;
+      if (taskDone(tk)) done++;
+    });
+  });
+  const thisWeek = days.includes(todayISO());
   const toggleLight = d => update(s => {
     if (!s.days[d]) s.days[d] = {
       tasks: [],
@@ -1362,12 +1472,47 @@ function Week({
   });
   return /*#__PURE__*/React.createElement("div", {
     className: "ra-view"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ra-hero"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ra-hero-l"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "ra-hero-day"
+  }, prettyDate(days[0]).replace(/^[^,]*,\s*/, ""), " – ", prettyDate(days[6]).replace(/^[^,]*,\s*/, "")), /*#__PURE__*/React.createElement("h1", {
+    className: "ra-hero-title"
+  }, planned ? done + " of " + planned + " done" : "Nothing planned"), /*#__PURE__*/React.createElement("p", {
+    className: "ra-hero-sub"
+  }, planned ? met + " of 5 pillars met" : "Pick a day and build it out", lightDays ? " · " + lightDays + " light" : ""), /*#__PURE__*/React.createElement("div", {
+    className: "ra-hero-chips"
+  }, days.map(d => {
+    const day = state.days[d] || {
+      tasks: []
+    };
+    const n = (day.tasks || []).length;
+    const complete = n > 0 && dayComplete(day);
+    const cls = d === todayISO() ? " today" : complete ? " on" : day.light ? " light" : "";
+    return /*#__PURE__*/React.createElement("span", {
+      key: d,
+      className: "mono ra-hero-chip" + cls
+    }, dayName(d).slice(0, 1));
+  }))), /*#__PURE__*/React.createElement(Ring, {
+    value: done,
+    max: planned || 1,
+    size: 92,
+    stroke: 9,
+    color: "#F0673E"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "ra-ring-num mono"
+  }, planned ? Math.round(done / planned * 100) + "%" : "–"), /*#__PURE__*/React.createElement("span", {
+    className: "ra-ring-lbl"
+  }, done, "/", planned))), /*#__PURE__*/React.createElement(WeeklyGoal, {
+    prog: prog
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "ra-section"
   }, /*#__PURE__*/React.createElement("p", {
     className: "ra-eyebrow"
-  }, "Plan the week"), /*#__PURE__*/React.createElement(WeeklyGoal, {
-    prog: weekPillarProgress(state.days, anchor)
-  }), /*#__PURE__*/React.createElement("div", {
-    className: "ra-weekhead"
+  }, "Days"), /*#__PURE__*/React.createElement("div", {
+    className: "ra-weeknav"
   }, /*#__PURE__*/React.createElement("button", {
     className: "ra-ghost",
     onClick: () => setAnchor(addDays(anchor, -7))
@@ -1375,19 +1520,21 @@ function Week({
     size: 18
   })), /*#__PURE__*/React.createElement("span", {
     className: "ra-weekrange"
-  }, prettyDate(days[0]).replace(/,.*/, ""), " – ", prettyDate(days[6]).replace(/^[^,]*,\s*/, "")), /*#__PURE__*/React.createElement("button", {
+  }, thisWeek ? "this week" : prettyDate(days[0]).replace(/^[^,]*,\s*/, "")), /*#__PURE__*/React.createElement("button", {
     className: "ra-ghost",
     onClick: () => setAnchor(addDays(anchor, 7))
   }, /*#__PURE__*/React.createElement(ChevronRight, {
     size: 18
-  }))), /*#__PURE__*/React.createElement("div", {
+  })))), /*#__PURE__*/React.createElement("div", {
     className: "ra-daylist"
   }, days.map(d => {
     const day = state.days[d] || {
       tasks: [],
       light: false
     };
-    const n = (day.tasks || []).length;
+    const tks = day.tasks || [];
+    const n = tks.length;
+    const dn = tks.filter(taskDone).length;
     const isToday = d === todayISO();
     const over = n > 3;
     return /*#__PURE__*/React.createElement("div", {
@@ -1395,31 +1542,40 @@ function Week({
       className: "ra-daycard" + (isToday ? " today" : "")
     }, /*#__PURE__*/React.createElement("div", {
       className: "ra-day-l"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "ra-day-date"
+    }, n > 0 ? /*#__PURE__*/React.createElement(Ring, {
+      value: dn,
+      max: n,
+      size: 38,
+      stroke: 4,
+      color: dn === n ? "#4EC1A6" : isToday ? "#F0673E" : PILLARS[tks[0].pillar].color
     }, /*#__PURE__*/React.createElement("span", {
-      className: "ra-dow"
-    }, dayName(d)), /*#__PURE__*/React.createElement("span", {
-      className: "mono ra-dnum"
-    }, dayNum(d))), /*#__PURE__*/React.createElement("div", {
+      className: "mono ra-day-ringnum"
+    }, dayNum(d))) : /*#__PURE__*/React.createElement("span", {
+      className: "mono ra-day-blank" + (day.light ? " light" : "")
+    }, dayNum(d)), /*#__PURE__*/React.createElement("div", {
       className: "ra-day-mid"
     }, /*#__PURE__*/React.createElement("div", {
+      className: "ra-day-top"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "ra-day-name"
+    }, dayName(d)), isToday && /*#__PURE__*/React.createElement("span", {
+      className: "ra-day-today"
+    }, "today"), day.light && /*#__PURE__*/React.createElement("span", {
+      className: "ra-tag"
+    }, "light")), n > 0 ? /*#__PURE__*/React.createElement("div", {
       className: "ra-day-dots"
-    }, (day.tasks || []).map(tk => /*#__PURE__*/React.createElement("span", {
+    }, tks.map(tk => /*#__PURE__*/React.createElement("span", {
       key: tk.id,
       className: "ra-dot",
       style: {
-        background: PILLARS[tk.pillar].color
+        background: PILLARS[tk.pillar].color,
+        opacity: taskDone(tk) ? 1 : 0.35
       }
-    })), n === 0 && /*#__PURE__*/React.createElement("span", {
-      className: "ra-dim ra-small"
-    }, "empty")), /*#__PURE__*/React.createElement("div", {
-      className: "ra-day-meta"
-    }, day.light && /*#__PURE__*/React.createElement("span", {
-      className: "ra-tag"
-    }, "light"), /*#__PURE__*/React.createElement("span", {
+    })), /*#__PURE__*/React.createElement("span", {
       className: "ra-small " + (over ? "ra-warn" : "ra-dim")
-    }, n, " ", over ? "· over 3" : n === 1 ? "task" : "tasks")))), /*#__PURE__*/React.createElement("div", {
+    }, dn, " of ", n, over ? " · over 3" : "")) : /*#__PURE__*/React.createElement("p", {
+      className: "ra-day-empty"
+    }, day.light ? "Rest counts — streak safe" : "Nothing planned — three is a good day"))), /*#__PURE__*/React.createElement("div", {
       className: "ra-day-actions"
     }, /*#__PURE__*/React.createElement("button", {
       className: "ra-lightbtn" + (day.light ? " on" : ""),
@@ -1429,9 +1585,9 @@ function Week({
     })), /*#__PURE__*/React.createElement("button", {
       className: "ra-addbtn",
       onClick: () => setEditing(d)
-    }, /*#__PURE__*/React.createElement(Plus, {
+    }, n === 0 ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Plus, {
       size: 16
-    }), " Plan")));
+    }), " Plan") : isToday ? "Swap" : "Edit")));
   })), editing && /*#__PURE__*/React.createElement(DayPlanner, {
     date: editing,
     state: state,
@@ -2051,47 +2207,139 @@ function You({
   streak,
   onOpenSettings
 }) {
-  const done = Object.values(state.days).filter(d => d.tasks?.length).filter(dayComplete).length;
+  const dates = Object.keys(state.days).sort();
+  const daysDone = Object.values(state.days).filter(d => d.tasks?.length).filter(dayComplete).length;
+  let tasksDone = 0;
+  dates.forEach(ds => (state.days[ds].tasks || []).forEach(tk => {
+    if (taskDone(tk)) tasksDone++;
+  }));
+  let best = 0,
+    run = 0;
+  if (dates.length) {
+    let cur = dates[0],
+      guard = 0;
+    while (cur <= todayISO() && guard++ < 1500) {
+      const day = state.days[cur];
+      const has = day && (day.tasks || []).length > 0;
+      if (has && dayComplete(day)) {
+        run++;
+        if (run > best) best = run;
+      } else if (has) run = 0;
+      cur = addDays(cur, 1);
+    }
+  }
+  const info = weighInfo(state.profile);
+  const booksRead = (state.reading || []).filter(b => b.status === "done").length;
+  const since = dates.length ? prettyDate(dates[0]).replace(/^[^,]*,\s*/, "") : null;
   return /*#__PURE__*/React.createElement("div", {
     className: "ra-view"
-  }, /*#__PURE__*/React.createElement("p", {
-    className: "ra-eyebrow"
-  }, "You"), /*#__PURE__*/React.createElement("h1", {
-    className: "ra-h1"
-  }, "Your baseline"), /*#__PURE__*/React.createElement("div", {
-    className: "ra-statrow"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "ra-stat"
-  }, /*#__PURE__*/React.createElement(Flame, {
-    size: 16,
-    color: "#EC7A93"
-  }), /*#__PURE__*/React.createElement("span", {
-    className: "mono ra-statnum"
+    className: "ra-hero"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ra-hero-l"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "ra-hero-day"
+  }, since ? "Since " + since + " · " + (daysBetween(dates[0], todayISO()) + 1) + " days" : "Your baseline"), /*#__PURE__*/React.createElement("h1", {
+    className: "ra-hero-title"
+  }, streak, " day", streak === 1 ? "" : "s", " running"), /*#__PURE__*/React.createElement("p", {
+    className: "ra-hero-sub"
+  }, best ? "Longest run " + best + " · " + daysDone + " days completed" : "Complete a planned day to start a streak"), info.last ? /*#__PURE__*/React.createElement("div", {
+    className: "ra-hero-pill"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "mono"
+  }, info.last.kg), " kg", info.delta !== null ? /*#__PURE__*/React.createElement("em", {
+    className: "ra-hero-delta",
+    style: {
+      color: info.delta > 0 ? "#E8B04B" : "#4EC1A6"
+    }
+  }, info.delta > 0 ? "+" : "", info.delta) : null) : null), /*#__PURE__*/React.createElement(Ring, {
+    value: streak,
+    max: best || streak || 1,
+    size: 92,
+    stroke: 9,
+    color: "#F0673E"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "ra-ring-num mono"
   }, streak), /*#__PURE__*/React.createElement("span", {
-    className: "ra-dim ra-small"
-  }, "day streak")), /*#__PURE__*/React.createElement("div", {
-    className: "ra-stat"
-  }, /*#__PURE__*/React.createElement(Check, {
-    size: 16,
-    color: "#4EC1A6"
-  }), /*#__PURE__*/React.createElement("span", {
-    className: "mono ra-statnum"
-  }, done), /*#__PURE__*/React.createElement("span", {
-    className: "ra-dim ra-small"
-  }, "days done")), weighInfo(state.profile).last && /*#__PURE__*/React.createElement("div", {
-    className: "ra-stat"
-  }, /*#__PURE__*/React.createElement(Scale, {
-    size: 16,
-    color: "#5EA8E8"
-  }), /*#__PURE__*/React.createElement("span", {
-    className: "mono ra-statnum"
-  }, weighInfo(state.profile).last.kg), /*#__PURE__*/React.createElement("span", {
-    className: "ra-dim ra-small"
-  }, "kg", weighInfo(state.profile).delta !== null ? ` · ${weighInfo(state.profile).delta > 0 ? "+" : ""}${weighInfo(state.profile).delta}` : ""))), /*#__PURE__*/React.createElement(ReadingCard, {
+    className: "ra-ring-lbl"
+  }, best ? "of " + best : "days"))), /*#__PURE__*/React.createElement("div", {
+    className: "ra-stats3"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ra-stat3"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "ra-stat3-big mono"
+  }, daysDone), /*#__PURE__*/React.createElement("span", {
+    className: "ra-stat3-l"
+  }, "days completed")), /*#__PURE__*/React.createElement("div", {
+    className: "ra-stat3"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "ra-stat3-big mono"
+  }, tasksDone), /*#__PURE__*/React.createElement("span", {
+    className: "ra-stat3-l"
+  }, "tasks done")), /*#__PURE__*/React.createElement("div", {
+    className: "ra-stat3"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "ra-stat3-big mono"
+  }, booksRead), /*#__PURE__*/React.createElement("span", {
+    className: "ra-stat3-l"
+  }, "books read"))), /*#__PURE__*/React.createElement("p", {
+    className: "ra-eyebrow ra-set-h"
+  }, "Reading"), /*#__PURE__*/React.createElement(ReadingCard, {
     state: state,
     update: update
-  }), /*#__PURE__*/React.createElement("button", {
+  }), /*#__PURE__*/React.createElement("p", {
+    className: "ra-eyebrow ra-set-h"
+  }, "Body & training"), /*#__PURE__*/React.createElement(BodyCard, {
+    state: state,
+    onOpenSettings: onOpenSettings
+  }));
+}
+function BodyCard({
+  state,
+  onOpenSettings
+}) {
+  const f = state.profile.fitness || {};
+  const all = state.profile.weightLog || [];
+  const log = all.slice(-7);
+  const info = weighInfo(state.profile);
+  const kgs = log.map(w => w.kg);
+  const lo = Math.min.apply(null, kgs),
+    hi = Math.max.apply(null, kgs);
+  return /*#__PURE__*/React.createElement("div", {
+    className: "ra-card"
+  }, log.length > 1 ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "ra-wbars"
+  }, log.map((w, i) => /*#__PURE__*/React.createElement("span", {
+    key: i,
+    className: "ra-wbar" + (i === log.length - 1 ? " on" : ""),
+    style: {
+      height: (hi === lo ? 70 : 42 + (w.kg - lo) / (hi - lo) * 54) + "%"
+    }
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "ra-tdee"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "mono ra-tdee-num"
+  }, info.last.kg), /*#__PURE__*/React.createElement("span", {
+    className: "ra-dim ra-small"
+  }, "kg · ", all.length, " weigh-ins", info.delta !== null ? " · " + (info.delta > 0 ? "+" : "") + info.delta + " since last" : ""))) : /*#__PURE__*/React.createElement("p", {
+    className: "ra-dim ra-small"
+  }, info.last ? "One weigh-in logged — the trend shows up after the next one." : "No weigh-ins yet. Log one on the Food tab and your targets follow it."), /*#__PURE__*/React.createElement("div", {
+    className: "ra-chipwrap",
+    style: {
+      marginTop: 14
+    }
+  }, f.level ? /*#__PURE__*/React.createElement("span", {
+    className: "ra-mini"
+  }, f.level) : null, (f.goals || []).map(g => /*#__PURE__*/React.createElement("span", {
+    key: g,
+    className: "ra-mini"
+  }, g)), f.session ? /*#__PURE__*/React.createElement("span", {
+    className: "ra-mini"
+  }, f.session, " min") : null), /*#__PURE__*/React.createElement("button", {
     className: "ra-settings-link",
+    style: {
+      marginTop: 14
+    },
     onClick: () => onOpenSettings && onOpenSettings()
   }, /*#__PURE__*/React.createElement(Settings, {
     size: 15
@@ -2383,7 +2631,8 @@ function MealSlotRow({
   target,
   protein,
   entries,
-  other
+  other,
+  next
 }) {
   const t = todayISO();
   const [name, setName] = useState("");
@@ -2452,7 +2701,11 @@ function MealSlotRow({
     className: "ra-slot-name"
   }, slot.slot)), slotK ? /*#__PURE__*/React.createElement("span", {
     className: "ra-dim ra-small mono"
-  }, slotK, " kcal") : null), entries.map(m => /*#__PURE__*/React.createElement("div", {
+  }, slotK, " kcal") : next ? /*#__PURE__*/React.createElement("span", {
+    className: "ra-slot-next"
+  }, "next") : null), !entries.length && !other ? /*#__PURE__*/React.createElement("p", {
+    className: "ra-slot-empty"
+  }, kcalHint ? "Nothing logged — room for ~" + kcalHint + " kcal" : "Nothing logged yet") : null, entries.map(m => /*#__PURE__*/React.createElement("div", {
     key: m.id,
     className: "ra-slot-entry"
   }, /*#__PURE__*/React.createElement("span", {
@@ -2562,8 +2815,102 @@ function MealsToday({
   const protein = proteinTargetOf(state.profile, state.food.profile);
   const log = state.food.log[t] || [];
   const slots = [...(state.food.profile.mealTimes || [])].sort((a, b) => (a.time || "").localeCompare(b.time || ""));
+  const otherEntries = log.filter(m => !m.slot || !slots.some(sl => sl.slot === m.slot));
+  const now = nowHM();
+  const empties = slots.filter(sl => !log.some(m => m.slot === sl.slot));
+  const nextSlot = (empties.find(sl => (sl.time || "99:99") >= now) || empties[0] || {}).slot;
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "ra-slots"
+  }, slots.map(sl => /*#__PURE__*/React.createElement(MealSlotRow, {
+    key: sl.slot + sl.time,
+    state: state,
+    update: update,
+    slot: sl,
+    target: target,
+    protein: protein,
+    entries: log.filter(m => m.slot === sl.slot),
+    next: sl.slot === nextSlot
+  })), /*#__PURE__*/React.createElement(MealSlotRow, {
+    state: state,
+    update: update,
+    slot: {
+      slot: "Other",
+      time: ""
+    },
+    target: target,
+    protein: protein,
+    entries: otherEntries,
+    other: true
+  })), /*#__PURE__*/React.createElement("p", {
+    className: "ra-dim ra-small",
+    style: {
+      marginTop: 12
+    }
+  }, "Type what you ate — kcal and protein are estimated if you leave them blank. Meal times live in Settings."));
+}
+function DualRing({
+  outer,
+  outerMax,
+  inner,
+  innerMax,
+  size = 96,
+  children
+}) {
+  const ring = (r, stroke, color, value, max) => {
+    const c = 2 * Math.PI * r;
+    const frac = max > 0 ? Math.min(1, value / max) : 0;
+    return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("circle", {
+      cx: size / 2,
+      cy: size / 2,
+      r: r,
+      fill: "none",
+      stroke: "rgba(255,255,255,.07)",
+      strokeWidth: stroke
+    }), /*#__PURE__*/React.createElement("circle", {
+      cx: size / 2,
+      cy: size / 2,
+      r: r,
+      fill: "none",
+      stroke: color,
+      strokeWidth: stroke,
+      strokeLinecap: "round",
+      strokeDasharray: c,
+      strokeDashoffset: c * (1 - frac),
+      transform: "rotate(-90 " + size / 2 + " " + size / 2 + ")",
+      style: {
+        transition: "stroke-dashoffset .6s cubic-bezier(.2,.8,.2,1)"
+      }
+    }));
+  };
+  return /*#__PURE__*/React.createElement("div", {
+    className: "ra-ring",
+    style: {
+      width: size,
+      height: size
+    }
+  }, /*#__PURE__*/React.createElement("svg", {
+    width: size,
+    height: size
+  }, ring(size / 2 - 4, 8, "#F0673E", outer, outerMax), ring(size / 2 - 17, 7, "#4EC1A6", inner, innerMax)), /*#__PURE__*/React.createElement("div", {
+    className: "ra-ring-c"
+  }, children));
+}
+function Food({
+  state,
+  update
+}) {
+  const t = todayISO();
+  const target = tdeeOf(state.profile);
+  const protein = proteinTargetOf(state.profile, state.food.profile);
+  const log = state.food.log[t] || [];
   const totalK = log.reduce((a, m) => a + (Number(m.kcal) || 0), 0);
   const totalP = log.reduce((a, m) => a + (Number(m.protein) || 0), 0);
+  const slots = [...(state.food.profile.mealTimes || [])];
+  const filled = slots.filter(sl => log.some(m => m.slot === sl.slot)).length;
+  const pct = target ? Math.round(Math.min(100, totalK / target * 100)) : 0;
+  const pPct = protein ? Math.round(Math.min(100, totalP / protein * 100)) : 0;
+  const left = target ? Math.max(0, target - totalK) : 0;
+  const info = weighInfo(state.profile);
   let read = null;
   if (target && totalK > 0) {
     const r = totalK / target;
@@ -2578,101 +2925,80 @@ function MealsToday({
       c: "#E8B04B"
     };
   }
-  const otherEntries = log.filter(m => !m.slot || !slots.some(sl => sl.slot === m.slot));
-  return /*#__PURE__*/React.createElement("div", {
-    className: "ra-card",
-    style: {
-      borderTopColor: "#4EC1A6"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "ra-card-h"
-  }, /*#__PURE__*/React.createElement(Utensils, {
-    size: 16,
-    color: "#4EC1A6"
-  }), " Today's meals"), /*#__PURE__*/React.createElement("div", {
-    className: "ra-foodtotal"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "mono ra-tdee-num"
-  }, totalK), /*#__PURE__*/React.createElement("span", {
-    className: "ra-dim ra-small"
-  }, target ? "of ~" + target + " kcal" : "kcal", read ? " · " : "", read && /*#__PURE__*/React.createElement("b", {
-    style: {
-      color: read.c
-    }
-  }, read.t), protein ? " · " + totalP + "/" + protein + "g protein" : "")), target > 0 && /*#__PURE__*/React.createElement("div", {
-    className: "ra-bar",
-    style: {
-      marginBottom: 6
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "ra-fill",
-    style: {
-      width: Math.min(100, totalK / target * 100) + "%",
-      background: read ? read.c : "#4EC1A6"
-    }
-  })), /*#__PURE__*/React.createElement("div", {
-    className: "ra-slots"
-  }, slots.map(sl => /*#__PURE__*/React.createElement(MealSlotRow, {
-    key: sl.slot + sl.time,
-    state: state,
-    update: update,
-    slot: sl,
-    target: target,
-    protein: protein,
-    entries: log.filter(m => m.slot === sl.slot)
-  })), otherEntries.length > 0 && /*#__PURE__*/React.createElement(MealSlotRow, {
-    state: state,
-    update: update,
-    slot: {
-      slot: "Other",
-      time: ""
-    },
-    target: target,
-    protein: protein,
-    entries: otherEntries,
-    other: true
-  }), otherEntries.length === 0 && /*#__PURE__*/React.createElement(MealSlotRow, {
-    state: state,
-    update: update,
-    slot: {
-      slot: "Other",
-      time: ""
-    },
-    target: target,
-    protein: protein,
-    entries: [],
-    other: true
-  })), /*#__PURE__*/React.createElement("p", {
-    className: "ra-dim ra-small",
-    style: {
-      marginTop: 4
-    }
-  }, "Type what you ate (kcal auto-estimated if blank), or tap Ideas for varied options per meal. Edit meal times in Settings."));
-}
-function Food({
-  state,
-  update
-}) {
-  const target = tdeeOf(state.profile);
-  const protein = proteinTargetOf(state.profile, state.food.profile);
   return /*#__PURE__*/React.createElement("div", {
     className: "ra-view"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "ra-pagehead"
-  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
-    className: "ra-eyebrow"
-  }, "Food"), /*#__PURE__*/React.createElement("h1", {
-    className: "ra-h1"
-  }, "Eat well, simply")), (target || protein) && /*#__PURE__*/React.createElement("div", {
-    className: "ra-targetchips"
-  }, target ? /*#__PURE__*/React.createElement("span", {
-    className: "ra-tchip"
-  }, target, /*#__PURE__*/React.createElement("i", null, "kcal")) : null, protein ? /*#__PURE__*/React.createElement("span", {
-    className: "ra-tchip"
-  }, protein, /*#__PURE__*/React.createElement("i", null, "g P")) : null)), /*#__PURE__*/React.createElement(WeighInCard, {
+    className: "ra-hero"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ra-hero-l"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "ra-hero-day"
+  }, prettyDate(t).replace(/,.*/, ""), " · fuel"), /*#__PURE__*/React.createElement("h1", {
+    className: "ra-hero-title"
+  }, target ? left + " left" : totalK + " kcal"), /*#__PURE__*/React.createElement("p", {
+    className: "ra-hero-sub"
+  }, target ? "of " + target + " kcal" + (read ? " · " : " · nothing logged yet") : "Add your body stats in Settings for targets", read ? /*#__PURE__*/React.createElement("b", {
+    style: {
+      color: read.c
+    }
+  }, read.t) : null), protein ? /*#__PURE__*/React.createElement("div", {
+    className: "ra-hero-pill"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "ra-hero-dot",
+    style: {
+      background: "#4EC1A6"
+    }
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "mono"
+  }, totalP), /*#__PURE__*/React.createElement("span", {
+    className: "ra-dim"
+  }, " / ", protein, " g protein")) : null), /*#__PURE__*/React.createElement(DualRing, {
+    outer: totalK,
+    outerMax: target || Math.max(1, totalK),
+    inner: totalP,
+    innerMax: protein || Math.max(1, totalP),
+    size: 96
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "ra-ring-num mono"
+  }, target ? pct + "%" : "–"), /*#__PURE__*/React.createElement("span", {
+    className: "ra-ring-lbl"
+  }, "of day"))), /*#__PURE__*/React.createElement("div", {
+    className: "ra-stats3"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ra-stat3"
+  }, /*#__PURE__*/React.createElement(Ring, {
+    value: totalP,
+    max: protein || Math.max(1, totalP),
+    size: 50,
+    stroke: 6,
+    color: "#4EC1A6"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "ra-stat3-n mono"
+  }, protein ? pPct : totalP)), /*#__PURE__*/React.createElement("span", {
+    className: "ra-stat3-l"
+  }, protein ? "% protein" : "g protein")), /*#__PURE__*/React.createElement("div", {
+    className: "ra-stat3"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "ra-stat3-big mono"
+  }, filled, /*#__PURE__*/React.createElement("em", {
+    className: "ra-stat3-of"
+  }, "/", slots.length)), /*#__PURE__*/React.createElement("span", {
+    className: "ra-stat3-l"
+  }, "meals logged")), /*#__PURE__*/React.createElement("div", {
+    className: "ra-stat3"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "ra-stat3-big mono"
+  }, info.last ? info.last.kg : "–"), /*#__PURE__*/React.createElement("span", {
+    className: "ra-stat3-l"
+  }, info.last ? info.due ? "kg · weigh-in due" : "kg · next in " + (info.cadence - daysBetween(info.last.date, todayISO())) + "d" : "no weigh-in yet"))), info.due && /*#__PURE__*/React.createElement(WeighInCard, {
     state: state,
     update: update
-  }), /*#__PURE__*/React.createElement(MealsToday, {
+  }), /*#__PURE__*/React.createElement("p", {
+    className: "ra-eyebrow",
+    style: {
+      marginBottom: 10
+    }
+  }, "Meals"), /*#__PURE__*/React.createElement(MealsToday, {
     state: state,
     update: update,
     target: target
@@ -3906,6 +4232,58 @@ function Styles() {
   .ra-opts-head-r { display:flex; align-items:center; gap:8px; }
   .ra-res-x { flex:none; background:var(--surface2); border:none; color:var(--dim); width:26px; height:26px; border-radius:999px; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; }
   .ra-res-x:active { transform:scale(.9); }
+
+  /* ---- v3: the Today treatment, everywhere ---- */
+  .ra-hero-chips { display:flex; gap:6px; margin-top:14px; }
+  .ra-hero-chip { width:30px; height:30px; border-radius:10px; background:rgba(0,0,0,.28); display:flex; align-items:center; justify-content:center; font-size:11px; color:var(--faint); }
+  .ra-hero-chip.on { color:#4EC1A6; }
+  .ra-hero-chip.light { color:#A78BE0; }
+  .ra-hero-chip.today { background:var(--accent); color:#0C0C11; font-weight:700; }
+  .ra-hero-pill { display:inline-flex; align-items:center; gap:6px; margin-top:13px; font-size:12.5px; font-weight:600; background:rgba(0,0,0,.28); padding:5px 11px; border-radius:999px; }
+  .ra-hero-dot { width:7px; height:7px; border-radius:999px; }
+  .ra-hero-delta { font-style:normal; font-family:'Space Mono',monospace; font-size:12px; margin-left:2px; }
+  .ra-section { display:flex; align-items:center; justify-content:space-between; margin:24px 0 10px; }
+  .ra-weeknav { display:flex; align-items:center; gap:6px; }
+  .ra-stat3-of { font-style:normal; font-size:15px; color:var(--faint); }
+
+  /* week: pillar rings + day rows */
+  .ra-pillrings { display:flex; justify-content:space-between; gap:5px; }
+  .ra-pillring { display:flex; flex-direction:column; align-items:center; gap:7px; min-width:0; }
+  .ra-pillring-n { font-size:12px; font-weight:700; color:var(--text); }
+  .ra-pillring-l { font-size:9.5px; color:var(--dim); letter-spacing:.2px; white-space:nowrap; }
+  .ra-pillring-p { font-style:normal; color:var(--faint); }
+  .ra-day-ringnum { font-size:12px; font-weight:700; }
+  .ra-day-blank { flex:none; width:38px; height:38px; border-radius:999px; background:var(--surface2); display:flex; align-items:center; justify-content:center; font-size:12px; color:var(--dim); }
+  .ra-day-blank.light { background:rgba(167,139,224,.14); color:#A78BE0; }
+  .ra-day-top { display:flex; align-items:center; gap:7px; }
+  .ra-day-name { font-size:13.5px; font-weight:600; }
+  .ra-day-today { font-size:9.5px; letter-spacing:.8px; text-transform:uppercase; color:var(--accent); font-weight:600; }
+  .ra-day-empty { font-size:12.5px; color:var(--faint); }
+  .ra-daycard.today { border:none; background:linear-gradient(135deg,rgba(240,103,62,.1),var(--surface)); }
+
+  /* you: weight trend */
+  .ra-wbars { display:flex; align-items:flex-end; gap:6px; height:56px; }
+  .ra-wbar { flex:1; background:var(--surface2); border-radius:4px 4px 0 0; }
+  .ra-wbar.on { background:var(--accent); }
+
+  /* settings: grouped rows */
+  .ra-sheet-grab { width:38px; height:4px; border-radius:999px; background:var(--line); margin:0 auto 14px; }
+  .ra-set-h { margin:22px 0 8px; }
+  .ra-set-group { background:var(--surface); border-radius:18px; overflow:hidden; box-shadow:0 2px 12px rgba(0,0,0,.3); }
+  .ra-set-row { display:flex; align-items:center; gap:12px; width:100%; background:transparent; border:none; border-top:1px solid rgba(255,255,255,.04); padding:15px 16px; color:var(--text); font-family:inherit; font-size:14px; text-align:left; cursor:pointer; }
+  .ra-set-row:first-child { border-top:none; }
+  .ra-set-ico { flex:none; width:26px; height:26px; border-radius:999px; display:flex; align-items:center; justify-content:center; }
+  .ra-set-label { flex:1; min-width:0; }
+  .ra-set-val { font-size:12.5px; color:var(--dim); }
+  .ra-set-chev { display:flex; color:var(--faint); transition:transform .2s cubic-bezier(.2,.8,.2,1); }
+  .ra-set-row.open .ra-set-chev { transform:rotate(90deg); }
+  .ra-set-body { padding:0 8px 8px; }
+  .ra-set-body .ra-card { background:var(--surface2); box-shadow:none; margin-bottom:0; border-radius:14px; }
+  .ra-set-foot { text-align:center; font-size:12px; color:var(--faint); margin-top:18px; }
+
+  /* food: slot polish */
+  .ra-slot-next { font-size:9.5px; letter-spacing:.8px; text-transform:uppercase; color:#E8B04B; background:rgba(232,176,75,.14); padding:2px 7px; border-radius:999px; font-weight:600; }
+  .ra-slot-empty { font-size:13px; color:var(--faint); margin-top:8px; }
   `);
 }
 try {
