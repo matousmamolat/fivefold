@@ -2294,6 +2294,26 @@ async function estimateKcal(desc) {
   const n = parseInt((String(t).match(/\d+/) || [])[0], 10);
   return Number.isFinite(n) ? n : 0;
 }
+async function estimateMacros(desc) {
+  const t = await callClaude(`Estimate the calories and protein in this food or meal: "${desc}". Assume a typical single serving if no amount is given. Return ONLY valid JSON, no prose, no fences: {"kcal":450,"protein":30}`);
+  let s = String(t).replace(/```json|```/g, "").trim();
+  const a = s.indexOf("{"),
+    b = s.lastIndexOf("}");
+  if (a >= 0 && b >= 0) s = s.slice(a, b + 1);
+  try {
+    const o = JSON.parse(s);
+    return {
+      kcal: Math.round(Number(o.kcal)) || 0,
+      protein: Math.round(Number(o.protein)) || 0
+    };
+  } catch {
+    const n = parseInt((String(t).match(/\d+/) || [])[0], 10);
+    return {
+      kcal: Number.isFinite(n) ? n : 0,
+      protein: 0
+    };
+  }
+}
 async function regenMeal(fp, meal, others, dName) {
   const focus = (fp.focus || []).join(", ") || "balanced";
   const prompt = `Suggest ONE replacement for the "${meal.slot}" meal (around ${meal.time}) for ${dName}.
@@ -2391,15 +2411,18 @@ function MealSlotRow({
   });
   const manualAdd = async () => {
     if (!name.trim()) return;
-    let k = Number(kcal) || 0;
+    let k = Number(kcal) || 0,
+      p = 0;
     if (!kcal) {
       setEst(true);
       try {
-        k = await estimateKcal(name.trim());
+        const m = await estimateMacros(name.trim());
+        k = m.kcal;
+        p = m.protein;
       } catch {}
       setEst(false);
     }
-    addEntry(name.trim(), k, 0);
+    addEntry(name.trim(), k, p);
     setName("");
     setKcal("");
   };
